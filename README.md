@@ -1,5 +1,4 @@
 # Data-Structure-C
-=
 Content:
 1. linked list
 2. Stack
