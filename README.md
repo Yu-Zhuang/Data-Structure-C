@@ -1,5 +1,4 @@
 # Data-Structure-C
-Data Structure in C
 =
 Content:
 1. linked list
