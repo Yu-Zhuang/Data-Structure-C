@@ -51,10 +51,10 @@ int main(void){
 		printf("\t= Open Address Collision Resolution =\n");
 		printf("\t=====================================\n");
 		printf("\t\t@程式主選單@\n");
-		printf("\t(1) 執行一次.\n\t(2) 執行n次,統計平均查找次數.\n\t(3) 查詢元素.\n\t(4) 刪除元素.\n\t(5) 新增元素.\n\t(0) 結束程式.\n\t請輸入: ");
+		printf("\t(1) 自動產檔並放入資料庫.\n\t(2) 執行n次,統計平均查找次數.\n\t(3) 查詢元素.\n\t(4) 刪除元素.\n\t(5) 新增元素.\n\t(0) 結束程式.\n\t請輸入: ");
 		scanf("%d", &flag);
 		if(flag == 0) break;
-		if(flag==3 || flag==4){
+		else if(flag==3 || flag==4){
 		//find element
 			if(flag==3){
 				int tmp;
@@ -87,11 +87,15 @@ int main(void){
 				DBstatus+=1;
 			}
 		}
+		// normal run
 		else if(flag==1 || flag==2){
 			Ctotal=0; Nfind=0; 
 			DBstatus=NSIZE;
 			int times=1; 
-			if(flag == 2){ printf("執行次數: "); scanf("%d", &times); }
+			if(flag == 2){ 
+				printf("執行次數: "); scanf("%d", &times); 
+				printf("查找 (3)有的元素 or (4)沒有的元素: "); scanf("%d", &flag);
+			}
 			for(int i=0;i<times;i++){
 				Ctimes=0; 
 			//generate input[];
@@ -106,17 +110,23 @@ int main(void){
 					printf("%d\t%d\t%d\n", i+1, input[i], site[i]);
 				}
 				// check whether each element/site is unique or not in array;
-				if(checkArray(site, NSIZE)==0) printf("site[]中沒有重複元素\n");
-				else printf("site有 %d 個重複元素\n", checkArray(site, NSIZE));
-				if(checkArray(input, NSIZE)==0) printf("input[]中沒有重複元素\n");
-				else printf("input[]有 %d 個重複元素\n", checkArray(input, NSIZE));
+				int check=checkArray(site, NSIZE);
+				printf("\nsite[]有無重複確認: ");
+				if(check==0) printf("\nsite[]中沒有重複元素\n");
+				else printf("\nsite有 %d 個重複元素\n", check);
+				check=checkArray(input, NSIZE);
+				printf("input[]有無重複確認: ");
+				if(check==0) printf("\ninput[]中沒有重複元素\n");
+				else printf("\ninput[]有 %d 個重複元素\n", check);
 				printf("\n************* END InsertElement **************\n");
 			// print database status;
 				printDB(DB, DBSIZE);
 			//find element;
-				if(flag==2){
+				if(flag==3 || flag==4){
 					printf("\n************* Find Element **************\n");
-					int tmp=input[rand()%30];
+					int tmp;
+					if(flag==3) tmp=input[rand()%30];
+					else tmp=MAX+1;
 					Nfind+=findDB(DB, DBSIZE, tmp, &Ctimes);
 					printf("comparison times: %d\n", Ctimes);
 					Ctotal += Ctimes; 
@@ -124,9 +134,11 @@ int main(void){
 				}
 			}
 		// 統計comparison times;
-			if(flag==2){
-				printf("沒找到次數: %d\n", Nfind);
-				printf("平均查找次數: %lf\n", (double)Ctotal/times);
+			if(flag==3 || flag==4){
+				printf("\n=========== 統計結果 =============\n");
+				printf("\t#沒找到次數: %d\n", Nfind);
+				printf("\t#平均查找次數: %lf\n", (double)Ctotal/times);
+				printf("\n=================================\n");
 			}
 		}
 		printf("\n繼續請按 1 , 結束請按0 : "); scanf("%d", &flag);
@@ -278,7 +290,7 @@ int checkArray(int *nums, int numsSize){
 	int ret=0;
 	for(int i=0;i<numsSize-1;i++){
 		for(int j=i+1;j<numsSize;j++){
-			if(nums[i] == nums[j]) ret++;
+			if(nums[i] == nums[j]) { ret++; printf("[%d] ", nums[i]); };
 		}
 	}
 	return ret;
