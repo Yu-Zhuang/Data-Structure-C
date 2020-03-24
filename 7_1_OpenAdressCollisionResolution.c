@@ -10,15 +10,18 @@
 @delete element: input element, output: comparison times and adress;
 @print table status;
 *功能:
-1. 選擇查找元素 (找的到or找不到);
-2. 選擇執行次數, 統計平均比較次數;
-3. 刪除元素;
-4. 新增元素;
+1. 產隨機值並放入database
+2. 選擇執行次數, 統計平均比較次數 (可選一定找的到or一定找不到);
+3. 查找元素 (可輸入找的到的or找不到的);
+4. 刪除元素;
+5. 新增元素;
+6. 查一元素並刪掉 (automatically run through all database);
+7. 刪一元素 並 新增回來 (automatically run through all database)；
 */
 // difine
 #define DBSIZE 30 //size of database 
 #define NSIZE 30 //size of origin input
-#define MAX 32767 // max of data range
+#define MAX 32768 // max of data range
 typedef struct table{
 	int val;
 	int start;
@@ -51,16 +54,48 @@ int main(void){
 		printf("\t= Open Address Collision Resolution =\n");
 		printf("\t=====================================\n");
 		printf("\t\t@程式主選單@\n");
-		printf("\t(1) 自動產檔並放入資料庫.\n\t(2) 執行n次,統計平均查找次數.\n\t(3) 查詢元素.\n\t(4) 刪除元素.\n\t(5) 新增元素.\n\t(0) 結束程式.\n\t請輸入: ");
+		printf("\t(1) 自動產檔並放入資料庫.\n\t(2) 執行n次,統計平均查找次數.\n\t(3) 查詢元素.\n\t(4) 刪除元素.\n\t(5) 新增元素.\n\t(6) 依序刪除全部(要先按1產檔)\n\t(7) 依序增刪全部(要先按1產檔)\n\t(0) 結束程式.\n\t請輸入: ");
 		scanf("%d", &flag);
+		Nfind=0; Ctotal=0; Ctimes=0;
+	//程式結束
 		if(flag == 0) break;
+	//依序增刪全部 (刪一增一);
+		else if(flag == 7){
+			for(int i=0;i<NSIZE;i++){
+				int tmp;
+			//delete one
+				tmp=deleteDB(DB, DBSIZE, DB[i].val, site);
+			//insert one
+				insertDB(DB, DBSIZE, DB[i].val, site);
+			}	
+			printDB(DB, DBSIZE);		
+		}
+	//依序查找並刪全部 (查一刪一);
+		else if(flag == 6){
+			for(int i=0;i<NSIZE;i++){
+				int temp, tmp;
+			//find element
+				temp=findDB(DB, DBSIZE, DB[i].val, &Ctimes);
+				Nfind+=temp;
+				Ctotal+=Ctimes;
+			//delete element
+				if(temp==0) tmp=deleteDB(DB, DBSIZE, DB[i].val, site);
+				DBstatus-=tmp;
+			}
+			printf("\n============= 統計 ============\n");
+			printf("\n沒找到次數: %d\n\n", Nfind);
+			printf("總共查找:%lf\n平均查找:%lf\n", Ctotal, (double)Ctotal/NSIZE);
+			printf("=================================\n");
+		}
+	//find or delete
 		else if(flag==3 || flag==4){
 		//find element
 			if(flag==3){
 				int tmp;
-				printf("輸入欲查找元素: ");	scanf("%d", &tmp);
+				printf("輸入欲查找元素: "); scanf("%d", &tmp);
 				printf("\n************* Find Element **************\n");
 				Nfind+=findDB(DB, DBSIZE, tmp, &Ctimes);
+				Ctotal+=Ctimes;
 				printf("comparison times: %d\n", Ctimes);
 				printf("\n************* END Find **************\n");
 			}
@@ -69,11 +104,11 @@ int main(void){
 				int tmp, temp;
 				printf("輸入欲刪除元素: ");	scanf("%d", &tmp);
 				temp=deleteDB(DB, DBSIZE, tmp, site);
-				Ctotal-=temp;
+				DBstatus-=temp; 
 				if(temp) printDB(DB, DBSIZE);
 			}
 		}
-		//insert element
+	//insert element
 		else if(flag==5){
 			int tmp=1;
 			if(DBstatus==NSIZE){
@@ -87,7 +122,7 @@ int main(void){
 				DBstatus+=1;
 			}
 		}
-		// normal run
+	// normal run
 		else if(flag==1 || flag==2){
 			Ctotal=0; Nfind=0; 
 			DBstatus=NSIZE;
@@ -148,32 +183,44 @@ int main(void){
 }
 //delete element in data base
 int deleteDB(TABLE *DB, int DBsize, int element, int *site){
+// address = hash (element);
 	int adress= Hash(element, DBsize), tmp=0, preadress=0;
 	printf("Target: %d\nPrimary ddress: %d\n", element, adress);
-	if( (DB[adress].val==element) && (DB[adress].start<0) && (DB[adress].next<0) )
-		{ printf("Find at: %d\n", adress); DB[adress].next=-2; site[adress]=-1; return 1; }
+// condition: delete the pedigree
+	if( (DB[adress].val==element) && (DB[adress].start==adress) && (DB[adress].next<0) )
+		{ printf("Find at: %d\n", adress); DB[adress].next=-2; DB[adress].start=-1 ;site[adress]=-1; return 1; }
+// else
 	if(DB[adress].start>-1 || DB[adress].next>-1){
+	// find element through "start" to "the pedigree"
 		if(DB[adress].start>-1){
 			preadress = adress;
 			tmp = DB[adress].start;
+			//condition: element is head of the pedigree
 			if(DB[tmp].val == element){
 				printf("Find at: %d\n", tmp);
+				// condition: and this pedigree have no more element;
 				if(DB[tmp].next <0) {DB[tmp].next=-2; DB[preadress].start=-1; site[tmp]=-1; return 1; } //delete pedigree;
+				// condition: this pedigree have other element;
 				else if(DB[tmp].next >-1) 
 					{ DB[preadress].start=DB[tmp].next; DB[tmp].next=-2; site[tmp]=-1; return 1; } //change start to tmp.next;
 			}
+			//condition: element "isn't" head of the pedigree
+		//so find element through "next" 
 			while(DB[tmp].next>-1){
 				preadress = tmp;
 				tmp = DB[tmp].next;
+				//find element in the pedigree
 				if(DB[tmp].val == element){ 
 					printf("Find at: %d\n", tmp);
+					//if element is end of the pedigree
 					if(DB[tmp].next > -1) 
 						{ DB[preadress].next=DB[tmp].next; DB[tmp].next=-2; site[tmp]=-1; return 1; }
+					//if element isn't end of the pedigree
 					else { DB[preadress].next=-1; DB[tmp].next=-2; site[tmp]=-1; return 1; }
 				}
 			}
 		}
-		//find through next
+	//find element "directly through next"
 		tmp=adress;
 		while(DB[tmp].next>-1){
 			preadress = tmp;
@@ -193,10 +240,14 @@ int deleteDB(TABLE *DB, int DBsize, int element, int *site){
 //find element
 int findDB(TABLE *DB, int DBsize, int element, int* Ctimes){
 	int adress= Hash(element, DBsize), tmp=0;
+	*Ctimes=0;
 	printf("Target: %d\nPrimary adress: %d\n", element, adress);
-	//find direct site first
+//first: find direct site 
+	*Ctimes=1; //statistics of collision times 
 	if(DB[adress].val == element && DB[adress].next!=-2) 
-		{ printf("find at: %d\n", adress); *Ctimes=1; return 0; }
+		{ printf("find at: %d\n", adress);  return 0; }
+	*Ctimes+=1;
+//find "start" or "next"
 	if(DB[adress].start>-1 || DB[adress].next>-1){
 		tmp=adress;
 		// find through next
@@ -207,9 +258,13 @@ int findDB(TABLE *DB, int DBsize, int element, int* Ctimes){
 				{ printf("find at: %d\n", tmp); return 0; }
 		}// find through start
 		if(DB[adress].start>-1){
+			// to the pedigree
 			tmp = DB[adress].start;
+			*Ctimes+=1;
+			// whether element is head of pedigree or not
 			if(DB[tmp].val == element && DB[tmp].next!=-2) 
-				{ printf("find at: %d\n", tmp); *Ctimes=1; return 0; }
+				{ printf("find at: %d\n", tmp);  return 0; }
+			// not head of pedigree, go find the pedigree 
 			while(DB[tmp].next>-1){
 				*Ctimes+=1;
 				tmp = DB[tmp].next;
@@ -227,8 +282,10 @@ void insertDB(TABLE *DB, int DBsize, int element, int *site){
 	int adress = Hash(element, DBsize);
 	// if start is empty;
 	if(DB[adress].start == -1){
+		// space empty too
 		if(DB[adress].next == -2)
 			{ DB[adress].val=element; DB[adress].next=-1; DB[adress].start=adress; *site=adress;}
+		// space is not empty, so use CRS(collision resolution to find a space)
 		else{
 			int newadress = CRS(DB, adress, DBsize);
 			DB[adress].start = newadress;
@@ -236,11 +293,16 @@ void insertDB(TABLE *DB, int DBsize, int element, int *site){
 			*site=newadress;
 		}
 	}
+	// start isn't empty
 	else{
+		// go to the pedigree that belong to itself
 		adress = DB[adress].start;
+		// find space through next (see whether there is a space in the pedigree);
 		while(DB[adress].next>-1) adress = DB[adress].next;	
+		// if find a space 
 		if(DB[adress].next == -2) { DB[adress].val = element; *site=adress; }
-		else if(DB[adress].next == -1){
+		// if no space in the pedigree, use CRS(collision resolution to find a space)
+		else { 
 			int newadress = CRS(DB, adress, DBsize);
 			DB[adress].next = newadress;
 			DB[newadress].val = element; DB[newadress].next = -1;	
@@ -280,7 +342,8 @@ void createInput(int *nums, int numsSize){
 	int charge[2]={1,-1};
 	for(int i=0;i<numsSize;i++){
 		if( ! (i%5) ) printf("\n%d.", i+1);
-		nums[i]=(rand()%(MAX+1))*charge[rand()%2];
+		nums[i]=(rand()%(MAX))*charge[rand()%2];
+		if(nums[i]<0) nums[i]-=rand()%2;
 		printf("\t%d",nums[i]);
 	}
 	printf("\n============= END Create Input =============\n");
