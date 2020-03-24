@@ -28,7 +28,7 @@ typedef struct table{
 void initDB(TABLE *DB, int size); //initialize DB;
 void insertDB(TABLE *DB, int DBsize, int element, int *site); //insert element to databse;
 int findDB(TABLE *DB, int DBsize, int element, int* Ctimes); //conparison times
-void deleteDB(TABLE *DB, int DBsize, int element);  //delete element in database
+int deleteDB(TABLE *DB, int DBsize, int element, int *site);  //delete element in database
 void printDB(TABLE *DB, int DBsize); //print database status
 
 int Hash(int element, int DBsize); //hash function
@@ -41,36 +41,54 @@ int main(void){
 	srand(time(NULL));
 //variable
 	TABLE DB[DBSIZE];
-	int input[NSIZE], site[NSIZE], Ctimes=0, Nfind=0, flag=1;
+	int input[NSIZE], site[NSIZE], Ctimes=0, Nfind=0, flag=1, DBstatus=0;
 	double Ctotal=0;
 	for(int i=0;i<NSIZE;i++) site[i]=-1;
+	initDB(DB,DBSIZE);
 //compution
 	while(flag){
 		printf("\t=====================================\n");
 		printf("\t==Open Address Collision Resolution==\n");
 		printf("\t=====================================\n");
 		printf("\t\t@程式主選單@\n");
-		printf("\t(1)執行一次.\n\t(2)執行n次,統計平均查找次數.\n\t(3)查詢元素.\n\t(4)刪除元素.\n\t(0)結束程式.\n\t請輸入: ");
+		printf("\t(1)執行一次.\n\t(2)執行n次,統計平均查找次數.\n\t(3)查詢元素.\n\t(4)刪除元素.\n\t(5)新增元素.\n\t(0)結束程式.\n\t請輸入: ");
 		scanf("%d", &flag);
 		if(flag == 0) break;
-		else if(flag==3 || flag==4){
+		if(flag==3 || flag==4){
 		//find element
 			if(flag==3){
-				printf("輸入欲查找元素: ");	scanf("%d", &flag);
+				int tmp;
+				printf("輸入欲查找元素: ");	scanf("%d", &tmp);
 				printf("\n************* Find Element **************\n");
-				Nfind+=findDB(DB, DBSIZE, flag, &Ctimes);
+				Nfind+=findDB(DB, DBSIZE, tmp, &Ctimes);
 				printf("comparison times: %d\n", Ctimes);
 				printf("\n************* END Find **************\n");
 			}
 		//delete element
 			if(flag==4){
-				printf("輸入欲刪除元素: ");	scanf("%d", &flag);
-				deleteDB(DB, DBSIZE, flag);
+				int tmp;
+				printf("輸入欲刪除元素: ");	scanf("%d", &tmp);
+				DBstatus-=deleteDB(DB, DBSIZE, tmp, site);
 				printDB(DB, DBSIZE);
+			}
+		}
+		//insert element
+		else if(flag==5){
+			int tmp=1;
+			if(DBstatus==NSIZE){
+				printf("資料庫 已滿!\n");
+				tmp=0;
+			}
+			if(tmp){
+				printf("輸入欲新增元素: "); scanf("%d", &tmp);
+				insertDB(DB, DBSIZE, tmp, site);
+				printDB(DB, DBSIZE);
+				DBstatus+=1;
 			}
 		}
 		else if(flag==1 || flag==2){
 			Ctotal=0; Nfind=0; 
+			DBstatus=NSIZE;
 			int times=1; 
 			if(flag == 2){ printf("執行次數: "); scanf("%d", &times); }
 			for(int i=0;i<times;i++){
@@ -116,11 +134,11 @@ int main(void){
 	return 0;
 }
 //delete element in data base
-void deleteDB(TABLE *DB, int DBsize, int element){
+int deleteDB(TABLE *DB, int DBsize, int element, int *site){
 	int adress= Hash(element, DBsize), tmp=0, preadress=0;
 	printf("Target: %d\nPrimary ddress: %d\n", element, adress);
 	if( (DB[adress].val==element) && (DB[adress].start!=adress) ) 
-		{ printf("Find at: %d\n", adress); DB[adress].next=-2; return ; }
+		{ printf("Find at: %d\n", adress); DB[adress].next=-2; site[adress]=-1; return 1; }
 	if(DB[adress].start>-1 || DB[adress].next>-1){
 		//find through pedigree
 		if(DB[adress].start>-1){
@@ -128,16 +146,18 @@ void deleteDB(TABLE *DB, int DBsize, int element){
 			tmp = DB[adress].start;
 			if(DB[tmp].val == element){
 				printf("Find at: %d\n", tmp);
-				if(DB[tmp].next <0) {DB[tmp].next=-2; DB[preadress].start=-1; return; } //delete pedigree;
-				else if(DB[tmp].next >-1) { DB[preadress].start=DB[tmp].next; DB[tmp].next=-2; return; } //change start to tmp.next;
+				if(DB[tmp].next <0) {DB[tmp].next=-2; DB[preadress].start=-1; site[tmp]=-1; return 1; } //delete pedigree;
+				else if(DB[tmp].next >-1) 
+					{ DB[preadress].start=DB[tmp].next; DB[tmp].next=-2; site[tmp]=-1; return 1; } //change start to tmp.next;
 			}
 			while(DB[tmp].next>-1){
 				preadress = tmp;
 				tmp = DB[tmp].next;
 				if(DB[tmp].val == element){ 
 					printf("Find at: %d\n", tmp);
-					if(DB[tmp].next > -1) { DB[preadress].next=DB[tmp].next; DB[tmp].next=-2; return; }
-					else { DB[preadress].next=-1; DB[tmp].next=-2; return; }
+					if(DB[tmp].next > -1) 
+						{ DB[preadress].next=DB[tmp].next; DB[tmp].next=-2; site[tmp]=-1; return 1; }
+					else { DB[preadress].next=-1; DB[tmp].next=-2; site[tmp]=-1; return 1; }
 				}
 			}
 		}
@@ -148,34 +168,40 @@ void deleteDB(TABLE *DB, int DBsize, int element){
 			tmp = DB[tmp].next;
 			if(DB[tmp].val == element){ 
 				printf("Find at: %d\n", tmp);
-				if(DB[tmp].next > -1) { DB[preadress].next=DB[tmp].next; DB[tmp].next=-2; return; }
-				else { DB[preadress].next=-1; DB[tmp].next=-2; return; }
+				if(DB[tmp].next > -1) 
+					{ DB[preadress].next=DB[tmp].next; DB[tmp].next=-2; site[tmp]=-1; return 1; }
+				else { DB[preadress].next=-1; DB[tmp].next=-2; site[tmp]=-1; return 1; }
 			}
 		}
 
 	}
 	printf("Not find!\n");
+	return 0;
 }
 
 //find element
 int findDB(TABLE *DB, int DBsize, int element, int* Ctimes){
 	int adress= Hash(element, DBsize), tmp=0;
 	printf("Target: %d\nPrimary adress: %d\n", element, adress);
-	if(DB[adress].val == element) { printf("find at: %d\n", adress); *Ctimes=1; return 0; }
+	if(DB[adress].val == element && DB[adress].next!=-2) 
+		{ printf("find at: %d\n", adress); *Ctimes=1; return 0; }
 	if(DB[adress].start>-1 || DB[adress].next>-1){
 		tmp=adress;
 		while(DB[tmp].next>-1){
 			*Ctimes+=1;
 			tmp = DB[tmp].next;
-			if(DB[tmp].val == element) { printf("find at: %d\n", tmp); return 0; }
+			if(DB[tmp].val == element && DB[adress].next!=-2) 
+				{ printf("find at: %d\n", tmp); return 0; }
 		}
 		if(DB[adress].start>-1){
 			tmp = DB[adress].start;
-			if(DB[tmp].val == element) { printf("find at: %d\n", adress); *Ctimes=1; return 0; }
+			if(DB[tmp].val == element && DB[adress].next!=-2) 
+				{ printf("find at: %d\n", tmp); *Ctimes=1; return 0; }
 			while(DB[tmp].next>-1){
 				*Ctimes+=1;
 				tmp = DB[tmp].next;
-				if(DB[tmp].val == element) { printf("find at: %d\n", tmp); return 0; }
+				if(DB[tmp].val == element && DB[adress].next!=-2) 
+					{ printf("find at: %d\n", tmp); return 0; }
 			}
 		}
 	}
