@@ -15,6 +15,7 @@
 3. 刪除元素;
 4. 新增元素;
 */
+// difine
 #define DBSIZE 30 //size of database 
 #define NSIZE 30 //size of origin input
 #define MAX 32767 // max of data range
@@ -23,21 +24,19 @@ typedef struct table{
 	int start;
 	int next;
 }TABLE;
-
-void createInput(int *nums, int numsSize); //create new input nums[];
+//function annoucement
 void initDB(TABLE *DB, int size); //initialize DB;
-void printDB(TABLE *DB, int DBsize); //print database status
 void insertDB(TABLE *DB, int DBsize, int element, int *site); //insert element to databse;
+int findDB(TABLE *DB, int DBsize, int element, int* Ctimes); //conparison times
+void deleteDB(TABLE *DB, int DBsize, int element);  //delete element in database
+void printDB(TABLE *DB, int DBsize); //print database status
 
 int Hash(int element, int DBsize); //hash function
 int CRS(TABLE *DB, int adress, int DBsize); //collision resolution
 
-int checkArray(int *nums, int numsSize);
-
-//application
-int findDB(TABLE *DB, int DBsize, int element, int* Ctimes); //conparison times
-void deleteDB(TABLE *DB, int DBsize, int element); 
-
+void createInput(int *nums, int numsSize); //create new input nums[];
+int checkArray(int *nums, int numsSize); //check each element is unique in array
+//main 
 int main(void){
 	srand(time(NULL));
 //variable
@@ -55,6 +54,7 @@ int main(void){
 		scanf("%d", &flag);
 		if(flag == 0) break;
 		else if(flag==3 || flag==4){
+		//find element
 			if(flag==3){
 				printf("輸入欲查找元素: ");	scanf("%d", &flag);
 				printf("\n************* Find Element **************\n");
@@ -62,6 +62,7 @@ int main(void){
 				printf("comparison times: %d\n", Ctimes);
 				printf("\n************* END Find **************\n");
 			}
+		//delete element
 			if(flag==4){
 				printf("輸入欲刪除元素: ");	scanf("%d", &flag);
 				deleteDB(DB, DBSIZE, flag);
@@ -70,7 +71,7 @@ int main(void){
 		}
 		else if(flag==1 || flag==2){
 			Ctotal=0; Nfind=0; 
-			int times; 
+			int times=1; 
 			if(flag == 2){ printf("執行次數: "); scanf("%d", &times); }
 			for(int i=0;i<times;i++){
 				Ctimes=0; 
@@ -97,12 +98,13 @@ int main(void){
 				if(flag==2){
 					printf("\n************* Find Element **************\n");
 					int tmp=input[rand()%30];
-					Nfind+=findDB(DB, DBSIZE, MAX+1, &Ctimes);
+					Nfind+=findDB(DB, DBSIZE, tmp, &Ctimes);
 					printf("comparison times: %d\n", Ctimes);
 					Ctotal += Ctimes; 
 					printf("\n************* END Find **************\n");	
 				}
 			}
+		// 統計comparison times;
 			if(flag==2){
 				printf("沒找到次數: %d\n", Nfind);
 				printf("平均查找次數: %lf\n", (double)Ctotal/times);
@@ -254,3 +256,4 @@ int checkArray(int *nums, int numsSize){
 	}
 	return ret;
 }
+
