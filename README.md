@@ -8,3 +8,5 @@ Content:
 6. Graph
 7. Sorting
 8. Searching
+9. Hash
+10. Collision resolution
