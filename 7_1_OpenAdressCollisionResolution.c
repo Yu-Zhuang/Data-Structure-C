@@ -54,11 +54,13 @@ int main(void){
 		printf("\t= Open Address Collision Resolution =\n");
 		printf("\t=====================================\n");
 		printf("\t\t@程式主選單@\n");
-		printf("\t(1) 自動產檔並放入資料庫.\n\t(2) 執行n次,統計平均查找次數.\n\t(3) 查詢元素.\n\t(4) 刪除元素.\n\t(5) 新增元素.\n\t(6) 依序刪除全部(要先按1產檔)\n\t(7) 依序增刪全部(要先按1產檔)\n\t(0) 結束程式.\n\t請輸入: ");
+		printf("\t(1) 自動產檔並放入資料庫.\n\t(2) 執行n次,統計平均查找次數.\n\t(3) 查詢元素.\n\t(4) 刪除元素.\n\t(5) 新增元素.\n\t(6) 依序刪除全部(要先按1產檔)\n\t(7) 依序增刪全部(要先按1產檔)\n\t(8) 顯示資料庫狀態\n\t(0) 結束程式.\n\t請輸入: ");
 		scanf("%d", &flag);
 		Nfind=0; Ctotal=0; Ctimes=0;
 	//程式結束
 		if(flag == 0) break;
+	//顯示資料庫狀態
+		else if(flag == 8) printDB(DB, DBSIZE);
 	//依序增刪全部 (刪一增一);
 		else if(flag == 7){
 			for(int i=0;i<NSIZE;i++){
