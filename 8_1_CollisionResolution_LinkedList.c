@@ -23,9 +23,11 @@ void GET_FILE(char str[][STR_LEN], char *file);
 
 void DB_INSERT(TABLE *DB, char *element);
 void DB_PRINT(TABLE *DB, int DBsize);
+int DB_FIND(TABLE *DB, char *target, int *Ctimes);
 
 int HASH(char *element);
 int HASH_ORIGIN(char *element);
+bool STR_SAME(char *templet, char *test);
 //void CRS(TABLE *DB, char *element);
 // MAIN
 int main(void){
@@ -34,6 +36,7 @@ int main(void){
 	TABLE DB[SPACE_SIZE]; for(int i=0;i<SPACE_SIZE;i++) DB[i].N=0; //data base table;
 	char input[INPUT_SIZE][STR_LEN], target[TEST_SIZE][STR_LEN];
 	char Ifile[]="1.cpp", Tfile[]="2.cpp";
+	int Ctimes=0;
 //compution
 	//get input file
 	GET_FILE(input, Ifile);
@@ -43,11 +46,50 @@ int main(void){
 	for(int i=0;i<INPUT_SIZE;i++) DB_INSERT(DB, input[i]);
 	//
 	DB_PRINT(DB, SPACE_SIZE);
+	//
+	int Ftimes=0;
+	for(int i=0;i<TEST_SIZE;i++) Ftimes+=DB_FIND(DB, target[i], &Ctimes);
+	printf("#Ctimes: %lf\n#Ftimes: %d\n#NFtimes: %d\n", (double)Ctimes/TEST_SIZE, Ftimes, TEST_SIZE-Ftimes);
+	// tmp
+	int Total=0;
+	for(int i=0;i<SPACE_SIZE;i++) Total+=DB[i].N;
+	printf("Total: %d\n", Total);
 //end
 	return 0;
 }
 //FUNCTION
-
+// find element
+int DB_FIND(TABLE *DB, char *target, int *Ctimes){
+	printf("Find target: %s (%d)\n", target, HASH(target));
+	printf("Result: ");
+	int num = HASH_ORIGIN(target),
+		address = HASH(target), flag=0;
+	NODE *ptr;
+	Ctimes[0]+=1; //comparison times
+	while(DB[address].N){
+		Ctimes[0]+=2; //comparison times
+		if(num>DB[address].max||num<DB[address].min) break; //not find
+		ptr=DB[address].next;
+		while(ptr!=NULL && num>=HASH_ORIGIN(ptr->val)){
+			if(STR_SAME(ptr->val, target)) { printf("#Find at %d\n\n", address); return 1; }//find
+			ptr=ptr->next;
+			Ctimes[0]+=1; flag=1; //comparison times
+		}
+		if( ! flag) Ctimes[0]+=1; //comparison times
+		break;
+	}
+	printf("( Not Find )\n\n");
+	return 0;
+}
+// whether str1 and str2 has the same value
+bool STR_SAME(char *templet, char *test){
+	int templet_len = strlen(templet),
+		test_len = strlen(test);
+	int i=0;
+	while(templet[i]==test[i]&&templet[i]!='\0'&&test[i]!='\0') i++;
+	if(i==test_len&&i==templet_len) return true;
+	return false;
+}
 //insert element to DB
 void DB_INSERT(TABLE *DB, char *element){
 // HASH()
@@ -59,28 +101,37 @@ void DB_INSERT(TABLE *DB, char *element){
 
 	strcpy(newnode->val, element); newnode->next=NULL;
 //compution
+
 	if(DB[address].N){
 		ptr = DB[address].next;
 		// insert (sorted)
-		if(DB[address].N==1 && origin<HASH_ORIGIN(DB[address].next->val)){
+		if(origin<HASH_ORIGIN(DB[address].next->val)){
 			newnode->next = DB[address].next;
-			DB[address].next = newnode;
+			DB[address].next = newnode;				
 		}
-		if(DB[address].N>1){
-			while(ptr->next!=NULL && origin>HASH_ORIGIN(ptr->next->val)) ptr=ptr->next;
-			if(ptr->next) newnode->next=ptr->next;
-			ptr->next=newnode;
+		else if(DB[address].N==1) DB[address].next->next = newnode;	
+		else if(DB[address].N>1){
+			if(origin<HASH_ORIGIN(DB[address].next->val)){
+				newnode->next = DB[address].next;
+				DB[address].next = newnode;				
+			}
+			else{
+				while(ptr->next!=NULL && origin>HASH_ORIGIN(ptr->next->val)) ptr=ptr->next;
+				if(ptr->next) newnode->next=ptr->next;
+				ptr->next=newnode;
+			}
 		}
 		// max and min;
 		if(origin<DB[address].min) DB[address].min=origin;
 		if(origin>DB[address].max) DB[address].max=origin;
+		DB[address].N++;
 	}
 	else{
 		DB[address].next=newnode;
 		DB[address].min=origin;
 		DB[address].max=origin;
+		DB[address].N++;
 	}
-	DB[address].N++;
 }
 // hash()
 int HASH(char *element){
@@ -137,4 +188,3 @@ void GET_FILE(char str[][STR_LEN], char *file){
 	}
 	fclose(fptr);
 }
-
