@@ -11,7 +11,9 @@
 5. 顯示資料庫狀態
 6. 自動寫入並搜尋
 7. 自動寫入並刪除
-8. 清空資料庫
+8. 自動刪一增一
+9. 清空資料庫
+
 */
 // DEFINE SIZE
 #define SPACE_SIZE 50
@@ -50,7 +52,7 @@ int main(void){
 //compution
 	while(flag){
 		printf("\n\t@主選單@\n"); 
-		printf("(1) 讀檔並寫入檔案\n(2) 搜尋資料\n(3) 新增資料\n(4) 刪除資料\n(5) 顯示資料庫狀態\n(6) 自動寫入並搜尋\n(7) 自動寫入並刪除\n(8) 清空資料庫\n(0) 結束程式\n");
+		printf("(1) 讀檔並寫入檔案\n(2) 搜尋資料\n(3) 新增資料\n(4) 刪除資料\n(5) 顯示資料庫狀態\n(6) 自動寫入並搜尋\n(7) 自動寫入並刪除\n(8) 自動刪一增一\n(9) 清空資料庫\n(0) 結束程式\n");
 		printf("請輸入選擇: "); scanf("%d", &flag);
 		Ctimes=0; Total=0; Ftimes=0;
 		if(flag == 0 ) break;
@@ -88,6 +90,17 @@ int main(void){
 				if(DB_DELETE(DB, input[i], &Ctimes)) DB_PRINT(DB,SPACE_SIZE);
 			}
 		}else if(flag == 8){
+			GET_FILE(input, Ifile); GET_FILE(target, Tfile);
+			for(int i=0;i<INPUT_SIZE;i++) DB_INSERT(DB, input[i]);
+			DB_PRINT(DB,SPACE_SIZE);
+			for(int i=0;i<INPUT_SIZE;i++) { DB_DELETE(DB, input[i], &Ctimes); DB_INSERT(DB, input[i]); }
+			DB_PRINT(DB,SPACE_SIZE);
+			// total 
+			int Total=0;
+			for(int i=0;i<SPACE_SIZE;i++) Total+=DB[i].N;
+			printf("Total: %d\n", Total);
+		}
+		else if(flag == 9){
 			for(int i=0;i<SPACE_SIZE;i++){
 				if(DB[i].N>1){
 					NODE *ptr=DB[i].next, *tmp;
