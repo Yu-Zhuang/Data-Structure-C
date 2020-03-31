@@ -3,21 +3,21 @@
 #include<string.h>
 #include<time.h>
 /*
-功能:
-1. 讀檔並寫入檔案
-2. 搜尋資料
-3. 新增資料
-4. 刪除資料
-5. 顯示資料庫狀態
-6. 自動寫入並搜尋
-7. 自動寫入並刪除
-8. 自動刪一增一
-9. 清空資料庫
-10. 產隨機檔執行n次統計
+*	功能:
+*	1. 讀檔並寫入檔案
+*	2. 搜尋資料
+*	3. 新增資料
+*	4. 刪除資料
+*	5. 顯示資料庫狀態
+*	6. 自動寫入並搜尋
+*	7. 自動寫入並刪除
+*	8. 自動刪一增一
+*	9. 清空資料庫
+*	10. 產隨機檔執行n次統計
 */
 // DEFINE SIZE
 #define SPACE_SIZE 50	//size of table 
-#define INPUT_SIZE 72	//size of input
+#define INPUT_SIZE 70	//size of input
 #define TEST_SIZE 48	//size of testFile
 #define STR_LEN 7	//size of each element
 // TYPE DEFINE
@@ -32,16 +32,18 @@ typedef struct array{
 	NODE *next;
 }TABLE;
 // FUNCTION ANNOUCEMENT
-void DB_INSERT(TABLE *DB, char *element);
-int DB_PRINT(TABLE *DB, int DBsize);
-int DB_FIND(TABLE *DB, char *target, int *Ctimes);
+void DB_INSERT(TABLE *DB, char *element); 
+int DB_PRINT(TABLE *DB, int DBsize);	
+int DB_FIND(TABLE *DB, char *target, int *Ctimes);	
 int DB_DELETE(TABLE *DB, char *target, int *Ctimes);
 void DB_INIT(TABLE *DB, int DBsize);
 
-int HASH(char *element);
-int HASH_ORIGIN(char *element);
+int HASH(char *element); //digital extraction+pseudorandom+modulo
+int HASH_ORIGIN(char *element); // 排序比較大小用
+
 void GET_FILE(char str[][STR_LEN], char *file);	// get file content
 void GENERATE_FILE(char *file, int size); //generate a file
+
 bool STR_SAME(char *templet, char *test); //whether str1 and str2 is the same
 // MAIN
 int main(void){
@@ -152,20 +154,6 @@ int main(void){
 	return 0;
 }
 //FUNCTION
-void DB_INIT(TABLE *DB, int DBsize){
-	for(int i=0;i<DBsize;i++){
-		if(DB[i].N>1){
-			NODE *ptr=DB[i].next, *tmp;
-			while(ptr!=NULL) { tmp=ptr; ptr=ptr->next; if(tmp) free(tmp); }
-			DB[i].next=NULL;
-			DB[i].N=0; DB[i].max=0; DB[i].min=0;
-		}else if(DB[i].N == 1){
-			free(DB[i].next);
-			DB[i].next=NULL;
-			DB[i].N=0; DB[i].max=0; DB[i].min=0;
-		}
-	}
-}
 //delete element
 int DB_DELETE(TABLE *DB, char *target, int *Ctimes){
 	printf("*********** DB_DELETE ***********\n");
@@ -213,9 +201,9 @@ int DB_FIND(TABLE *DB, char *target, int *Ctimes){
 	int num = HASH_ORIGIN(target),
 		address = HASH(target), flag=0;
 	NODE *ptr;
-
-	while(DB[address].N){ 
-		if(num>DB[address].max||num<DB[address].min) break; //not find
+	while(DB[address].N){
+		if(num<DB[address].min) break; //not find
+		if(num>DB[address].max) break; //not find
 		ptr=DB[address].next;
 		while(ptr!=NULL){	
 			Ctimes[0]+=1; //comparison times
@@ -337,6 +325,7 @@ void GET_FILE(char str[][STR_LEN], char *file){
 	}
 	fclose(fptr);
 }
+// file generator
 void GENERATE_FILE(char *file, int size){
 	FILE *fptr=fopen(file,"w");
 	char str[STR_LEN]="801017";
@@ -352,4 +341,18 @@ void GENERATE_FILE(char *file, int size){
 	}
 	fclose(fptr);
 }
-
+// initialize Data Base
+void DB_INIT(TABLE *DB, int DBsize){
+	for(int i=0;i<DBsize;i++){
+		if(DB[i].N>1){
+			NODE *ptr=DB[i].next, *tmp;
+			while(ptr!=NULL) { tmp=ptr; ptr=ptr->next; if(tmp) free(tmp); }
+			DB[i].next=NULL;
+			DB[i].N=0; DB[i].max=0; DB[i].min=0;
+		}else if(DB[i].N == 1){
+			free(DB[i].next);
+			DB[i].next=NULL;
+			DB[i].N=0; DB[i].max=0; DB[i].min=0;
+		}
+	}
+}
