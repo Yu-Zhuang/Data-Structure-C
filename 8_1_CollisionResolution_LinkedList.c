@@ -2,6 +2,14 @@
 #include<stdlib.h>
 #include<string.h>
 #include<time.h>
+/*
+功能:
+1. 讀檔並寫入檔案
+2. 搜尋資料
+3. 新增資料
+4. 刪除資料
+5. 顯示資料庫狀態
+*/
 // DEFINE SIZE
 #define SPACE_SIZE 50
 #define INPUT_SIZE 72
@@ -29,42 +37,63 @@ int DB_DELETE(TABLE *DB, char *target, int *Ctimes);
 int HASH(char *element);
 int HASH_ORIGIN(char *element);
 bool STR_SAME(char *templet, char *test);
-
 // MAIN
 int main(void){
 //variable;
-
-	TABLE DB[SPACE_SIZE]; for(int i=0;i<SPACE_SIZE;i++) DB[i].N=0; //data base table;
-	char input[INPUT_SIZE][STR_LEN], target[TEST_SIZE][STR_LEN];
-	char Ifile[]="1.cpp", Tfile[]="2.cpp";
-	int Ctimes=0;
+	TABLE DB[SPACE_SIZE]; for(int i=0;i<SPACE_SIZE;i++) DB[i].N=0; //data base;
+	char input[INPUT_SIZE][STR_LEN], target[TEST_SIZE][STR_LEN]; //input and test file;
+	char Ifile[]="1.cpp", Tfile[]="2.cpp"; // file;
+	int Ctimes=0, Total=0, Ftimes=0, flag=1; //comparison times, total number of element in DB;
 //compution
-	//get input file
-	GET_FILE(input, Ifile);
-	//get test file
-	GET_FILE(target, Tfile);
-	// insert element to data base
-	for(int i=0;i<INPUT_SIZE;i++) DB_INSERT(DB, input[i]);
-	// print DB
-	DB_PRINT(DB, SPACE_SIZE);
-	// find element
-	int Ftimes=0;
-	for(int i=0;i<TEST_SIZE;i++) Ftimes+=DB_FIND(DB, target[i], &Ctimes);
-	printf("#Ctimes: %lf\n#Ftimes: %d\n#NFtimes: %d\n", (double)Ctimes/TEST_SIZE, Ftimes, TEST_SIZE-Ftimes);
-	// delete element
-	for(int i=0;i<TEST_SIZE;i++){
-		if(DB_DELETE(DB, target[i], &Ctimes)) DB_PRINT(DB,SPACE_SIZE);
+	while(flag){
+		printf("\n\t@主選單@\n"); 
+		printf("(1) 讀檔並寫入檔案\n(2) 搜尋資料\n(3) 新增資料\n(4) 刪除資料\n(5) 顯示資料庫狀態\n(6) 自動寫入並搜尋\n(7) 自動寫入並刪除\n(8) 自動刪除全部資料\n(0) 結束程式\n");
+		printf("請輸入選擇: "); scanf("%d", &flag);
+		Ctimes=0; Total=0; Ftimes=0;
+		if(flag == 0 ) break;
+		else if(flag == 1){
+			GET_FILE(input, Ifile); GET_FILE(target, Tfile);
+			for(int i=0;i<INPUT_SIZE;i++) DB_INSERT(DB, input[i]);
+			DB_PRINT(DB,SPACE_SIZE);
+		}else if(flag == 2){
+			char str[STR_LEN];
+			printf("請輸入欲搜尋ID: "); scanf("%[^\n]", str);
+			Ftimes+=DB_FIND(DB, str, &Ctimes);
+			printf("#Ctimes: %d\n", Ctimes);
+		}else if(flag == 3){
+			char str[STR_LEN];
+			printf("請輸入欲新增ID: "); scanf("%[^\n]", str);
+			DB_INSERT(DB, str);		
+		}else if(flag == 4){
+			char str[STR_LEN];
+			printf("請輸入欲刪除ID: "); scanf("%[^\n]", str);
+			DB_DELETE(DB, str, &Ctimes);			
+		}else if(flag == 5) DB_PRINT(DB, SPACE_SIZE);
+		else if(flag == 6){
+			GET_FILE(input, Ifile); GET_FILE(target, Tfile);
+			for(int i=0;i<INPUT_SIZE;i++) DB_INSERT(DB, input[i]);
+			DB_PRINT(DB, SPACE_SIZE);
+			for(int i=0;i<TEST_SIZE;i++) Ftimes+=DB_FIND(DB, target[i], &Ctimes);
+			printf("\n==========================================\n");
+			printf("#Ctimes: %lf\n#Ftimes: %d\n#NFtimes: %d\n", (double)Ctimes/TEST_SIZE, Ftimes, TEST_SIZE-Ftimes);
+			printf("==========================================\n");
+		}else if(flag == 7){
+			GET_FILE(input, Ifile); GET_FILE(target, Tfile);
+			for(int i=0;i<INPUT_SIZE;i++) DB_INSERT(DB, input[i]);
+			DB_PRINT(DB, SPACE_SIZE);
+			for(int i=0;i<TEST_SIZE;i++){
+				if(DB_DELETE(DB, target[i], &Ctimes)) DB_PRINT(DB,SPACE_SIZE);
+			}
+		}else if(flag == 8){
+			for(int i=0;i<INPUT_SIZE;i++) DB_DELETE(DB, input[i], &Ctimes);
+			DB_PRINT(DB,SPACE_SIZE);
+		}
+		printf("繼續按 1, 結束按 0 : "); scanf("%d", &flag);
 	}
-	// total 
-	int Total=0;
-	for(int i=0;i<SPACE_SIZE;i++) Total+=DB[i].N;
-	printf("Total: %d\n", Total);
-
 //end
 	return 0;
 }
 //FUNCTION
-
 //delete element
 int DB_DELETE(TABLE *DB, char *target, int *Ctimes){
 	printf("*********** DB_DELETE ***********\n");
@@ -125,15 +154,6 @@ int DB_FIND(TABLE *DB, char *target, int *Ctimes){
 	printf("( Not Find )\n\n");
 	return 0;
 }
-// whether str1 and str2 has the same value
-bool STR_SAME(char *templet, char *test){
-	int templet_len = strlen(templet),
-		test_len = strlen(test);
-	int i=0;
-	while(templet[i]==test[i]&&templet[i]!='\0'&&test[i]!='\0') i++;
-	if(i==test_len&&i==templet_len) return true;
-	return false;
-}
 //insert element to DB
 void DB_INSERT(TABLE *DB, char *element){
 // HASH()
@@ -177,19 +197,6 @@ void DB_INSERT(TABLE *DB, char *element){
 		DB[address].N++;
 	}
 }
-// hash()
-int HASH(char *element){
-	int ret=0;
-	ret=element[0];
-	ret+=element[2]%10*7;
-	ret+=(element[5]*10+element[6])*111;
-	return ret%(SPACE_SIZE-1);
-}
-int HASH_ORIGIN(char *element){
-	int ret=0, i=0;
-	while(element[i]!='\0') { ret+=element[i]-'0'; i++; }
-	return ret;
-}
 // print data base
 void DB_PRINT(TABLE *DB, int DBsize){
 	printf("\n************** DB_PRINT ****************\n");
@@ -221,6 +228,29 @@ void DB_PRINT(TABLE *DB, int DBsize){
 	printf("\t==================================\n");
 	printf("\n************** END DB_PRINT ****************\n");
 }
+// hash()
+int HASH(char *element){
+	int ret=0;
+	ret=element[0];
+	ret+=element[2]%10*7;
+	ret+=(element[5]*10+element[6])*111;
+	return ret%(SPACE_SIZE-1);
+}
+// 排序用
+int HASH_ORIGIN(char *element){
+	int ret=0, i=0;
+	while(element[i]!='\0') { ret+=element[i]-'0'; i++; }
+	return ret;
+}
+// whether str1 and str2 has the same value
+bool STR_SAME(char *templet, char *test){
+	int templet_len = strlen(templet),
+		test_len = strlen(test);
+	int i=0;
+	while(templet[i]==test[i]&&templet[i]!='\0'&&test[i]!='\0') i++;
+	if(i==test_len&&i==templet_len) return true;
+	return false;
+}
 // get value from file
 void GET_FILE(char str[][STR_LEN], char *file){
 	FILE *fptr=fopen(file,"r");
@@ -233,4 +263,3 @@ void GET_FILE(char str[][STR_LEN], char *file){
 	}
 	fclose(fptr);
 }
-
