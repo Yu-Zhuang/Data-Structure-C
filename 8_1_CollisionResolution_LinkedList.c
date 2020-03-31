@@ -9,6 +9,9 @@
 3. 新增資料
 4. 刪除資料
 5. 顯示資料庫狀態
+6. 自動寫入並搜尋
+7. 自動寫入並刪除
+8. 清空資料庫
 */
 // DEFINE SIZE
 #define SPACE_SIZE 50
@@ -47,7 +50,7 @@ int main(void){
 //compution
 	while(flag){
 		printf("\n\t@主選單@\n"); 
-		printf("(1) 讀檔並寫入檔案\n(2) 搜尋資料\n(3) 新增資料\n(4) 刪除資料\n(5) 顯示資料庫狀態\n(6) 自動寫入並搜尋\n(7) 自動寫入並刪除\n(8) 自動刪除全部資料\n(0) 結束程式\n");
+		printf("(1) 讀檔並寫入檔案\n(2) 搜尋資料\n(3) 新增資料\n(4) 刪除資料\n(5) 顯示資料庫狀態\n(6) 自動寫入並搜尋\n(7) 自動寫入並刪除\n(8) 清空資料庫\n(0) 結束程式\n");
 		printf("請輸入選擇: "); scanf("%d", &flag);
 		Ctimes=0; Total=0; Ftimes=0;
 		if(flag == 0 ) break;
@@ -57,16 +60,16 @@ int main(void){
 			DB_PRINT(DB,SPACE_SIZE);
 		}else if(flag == 2){
 			char str[STR_LEN];
-			printf("請輸入欲搜尋ID: "); scanf("%[^\n]", str);
+			printf("請輸入欲搜尋ID: "); getchar(); scanf("%[^\n]", str); 
 			Ftimes+=DB_FIND(DB, str, &Ctimes);
 			printf("#Ctimes: %d\n", Ctimes);
 		}else if(flag == 3){
 			char str[STR_LEN];
-			printf("請輸入欲新增ID: "); scanf("%[^\n]", str);
+			printf("請輸入欲新增ID: "); getchar(); scanf("%[^\n]", str);
 			DB_INSERT(DB, str);		
 		}else if(flag == 4){
 			char str[STR_LEN];
-			printf("請輸入欲刪除ID: "); scanf("%[^\n]", str);
+			printf("請輸入欲刪除ID: "); getchar(); scanf("%[^\n]", str);
 			DB_DELETE(DB, str, &Ctimes);			
 		}else if(flag == 5) DB_PRINT(DB, SPACE_SIZE);
 		else if(flag == 6){
@@ -81,12 +84,22 @@ int main(void){
 			GET_FILE(input, Ifile); GET_FILE(target, Tfile);
 			for(int i=0;i<INPUT_SIZE;i++) DB_INSERT(DB, input[i]);
 			DB_PRINT(DB, SPACE_SIZE);
-			for(int i=0;i<TEST_SIZE;i++){
-				if(DB_DELETE(DB, target[i], &Ctimes)) DB_PRINT(DB,SPACE_SIZE);
+			for(int i=0;i<INPUT_SIZE;i++){
+				if(DB_DELETE(DB, input[i], &Ctimes)) DB_PRINT(DB,SPACE_SIZE);
 			}
 		}else if(flag == 8){
-			for(int i=0;i<INPUT_SIZE;i++) DB_DELETE(DB, input[i], &Ctimes);
-			DB_PRINT(DB,SPACE_SIZE);
+			for(int i=0;i<SPACE_SIZE;i++){
+				if(DB[i].N>1){
+					NODE *ptr=DB[i].next, *tmp;
+					while(ptr!=NULL) { tmp=ptr; ptr=ptr->next; if(tmp) free(tmp); }
+					DB[i].next=NULL;
+					DB[i].N=0; DB[i].max=0; DB[i].min=0;
+				}else if(DB[i].N == 1){
+					free(DB[i].next);
+					DB[i].next=NULL;
+					DB[i].N=0; DB[i].max=0; DB[i].min=0;
+				}
+			}
 		}
 		printf("繼續按 1, 結束按 0 : "); scanf("%d", &flag);
 	}
@@ -98,19 +111,23 @@ int main(void){
 int DB_DELETE(TABLE *DB, char *target, int *Ctimes){
 	printf("*********** DB_DELETE ***********\n");
 	int ret=0, address = HASH(target);
+// if no target in DB
 	if( (! DB_FIND(DB,target,Ctimes)) || DB[address].N==0) ret=0;
+// has target in DB
 	else{
-		NODE *ptr, *pre, *tmp;
+		NODE *ptr, *pre, *tmp, *del;
 		ptr=DB[address].next;
 		pre=DB[address].next;
-		//if(STR_SAME(target, ptr->val))
 		while(ptr!=NULL) {
 			if(STR_SAME(target, ptr->val)){ 
 				ret=1; 
-				if(DB[address].N==1) pre = NULL;
-				else if(ptr == DB[address].next) DB[address].next = ptr->next;
-				else pre->next = ptr->next;
+			// delete element
+				if(DB[address].N==1) { DB[address].next=NULL; free(ptr); } 
+				else if(ptr == DB[address].next) 
+					{ DB[address].next=ptr->next; free(ptr); }
+				else { pre->next = ptr->next; free(ptr); }
 				DB[address].N--;
+			// adjust DB[address]. min max
 				if(DB[address].N>0 &&(HASH_ORIGIN(ptr->val)==DB[address].max ||HASH_ORIGIN(ptr->val)==DB[address].min)){
 					tmp = DB[address].next;
 					DB[address].min = HASH_ORIGIN(tmp->val);
