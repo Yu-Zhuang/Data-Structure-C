@@ -24,11 +24,12 @@ void GET_FILE(char str[][STR_LEN], char *file);
 void DB_INSERT(TABLE *DB, char *element);
 void DB_PRINT(TABLE *DB, int DBsize);
 int DB_FIND(TABLE *DB, char *target, int *Ctimes);
+int DB_DELETE(TABLE *DB, char *target, int *Ctimes);
 
 int HASH(char *element);
 int HASH_ORIGIN(char *element);
 bool STR_SAME(char *templet, char *test);
-//void CRS(TABLE *DB, char *element);
+
 // MAIN
 int main(void){
 //variable;
@@ -42,22 +43,64 @@ int main(void){
 	GET_FILE(input, Ifile);
 	//get test file
 	GET_FILE(target, Tfile);
-	//
+	// insert element to data base
 	for(int i=0;i<INPUT_SIZE;i++) DB_INSERT(DB, input[i]);
-	//
+	// print DB
 	DB_PRINT(DB, SPACE_SIZE);
-	//
+	// find element
 	int Ftimes=0;
 	for(int i=0;i<TEST_SIZE;i++) Ftimes+=DB_FIND(DB, target[i], &Ctimes);
 	printf("#Ctimes: %lf\n#Ftimes: %d\n#NFtimes: %d\n", (double)Ctimes/TEST_SIZE, Ftimes, TEST_SIZE-Ftimes);
-	// tmp
+	// delete element
+	for(int i=0;i<TEST_SIZE;i++){
+		if(DB_DELETE(DB, target[i], &Ctimes)) DB_PRINT(DB,SPACE_SIZE);
+	}
+	// total 
 	int Total=0;
 	for(int i=0;i<SPACE_SIZE;i++) Total+=DB[i].N;
 	printf("Total: %d\n", Total);
+
 //end
 	return 0;
 }
 //FUNCTION
+
+//delete element
+int DB_DELETE(TABLE *DB, char *target, int *Ctimes){
+	printf("*********** DB_DELETE ***********\n");
+	int ret=0, address = HASH(target);
+	if( (! DB_FIND(DB,target,Ctimes)) || DB[address].N==0) ret=0;
+	else{
+		NODE *ptr, *pre, *tmp;
+		ptr=DB[address].next;
+		pre=DB[address].next;
+		//if(STR_SAME(target, ptr->val))
+		while(ptr!=NULL) {
+			if(STR_SAME(target, ptr->val)){ 
+				ret=1; 
+				if(DB[address].N==1) pre = NULL;
+				else if(ptr == DB[address].next) DB[address].next = ptr->next;
+				else pre->next = ptr->next;
+				DB[address].N--;
+				if(DB[address].N>0 &&(HASH_ORIGIN(ptr->val)==DB[address].max ||HASH_ORIGIN(ptr->val)==DB[address].min)){
+					tmp = DB[address].next;
+					DB[address].min = HASH_ORIGIN(tmp->val);
+					DB[address].max = HASH_ORIGIN(tmp->val);
+					while(tmp){
+						if(HASH_ORIGIN(tmp->val)>DB[address].max) DB[address].max = HASH_ORIGIN(tmp->val);
+						if(HASH_ORIGIN(tmp->val)<DB[address].min) DB[address].min = HASH_ORIGIN(tmp->val);
+						tmp = tmp->next;
+					}
+				}
+				break;
+			}
+			pre = ptr;
+			ptr = ptr->next;
+		}
+	}
+	printf("*********** END DB_DELETE ***********\n");
+	return ret;
+}
 // find element
 int DB_FIND(TABLE *DB, char *target, int *Ctimes){
 	printf("Find target: %s (%d)\n", target, HASH(target));
@@ -65,6 +108,7 @@ int DB_FIND(TABLE *DB, char *target, int *Ctimes){
 	int num = HASH_ORIGIN(target),
 		address = HASH(target), flag=0;
 	NODE *ptr;
+
 	Ctimes[0]+=1; //comparison times
 	while(DB[address].N){
 		Ctimes[0]+=2; //comparison times
@@ -150,15 +194,16 @@ int HASH_ORIGIN(char *element){
 void DB_PRINT(TABLE *DB, int DBsize){
 	printf("\n************** DB_PRINT ****************\n");
 	NODE *ptr;
-	int count=0;
+	int count=0, total=0;
 	printf("[No.]\t[STATUS]\t[Value]\n");
-	printf(" \tN|max|min\tval|num\n");
+	printf(" \tN|min|max\tval|num\n");
 	printf("-------------------------------------------\n");
 	for(int i=0;i<DBsize;i++){
 		if( ! DB[i].N ) printf("%d\t%s \t%s\n\n", i, "(empty)","(empty)"); 
 		else{
 			count++;
-			printf("%d\t%d/%d/%d\t\t", i, DB[i].N,DB[i].max, DB[i].min);
+			total+=DB[i].N;
+			printf("%d\t%d/%d/%d\t\t", i, DB[i].N,DB[i].min, DB[i].max);
 			ptr=DB[i].next;
 			while(ptr!=NULL) { printf("[%s]->", ptr->val); ptr=ptr->next; }
 			printf("|\n");
@@ -171,7 +216,7 @@ void DB_PRINT(TABLE *DB, int DBsize){
 	}
 	printf("-------------------------------------------\n");
 	printf("\t==================================\n");
-	printf("\t= #Theoretical Load Factor: %.2lf =\n", (double)INPUT_SIZE/SPACE_SIZE);
+	printf("\t= #Theoretical Load Factor: %.2lf =\n", (double)total/SPACE_SIZE);
 	printf("\t= #Real Load Factor: %.2lf        =\n", (double)count/SPACE_SIZE);
 	printf("\t==================================\n");
 	printf("\n************** END DB_PRINT ****************\n");
@@ -188,3 +233,4 @@ void GET_FILE(char str[][STR_LEN], char *file){
 	}
 	fclose(fptr);
 }
+
