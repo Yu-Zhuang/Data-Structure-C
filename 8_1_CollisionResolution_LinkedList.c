@@ -13,6 +13,7 @@
 7. 自動寫入並刪除
 8. 自動刪一增一
 9. 清空資料庫
+10. 產隨機檔執行n次統計
 */
 // DEFINE SIZE
 #define SPACE_SIZE 50	//size of table 
@@ -56,7 +57,7 @@ int main(void){
 		printf("\t*  Linked List Collision Resolution  *\n");
 		printf("\t**************************************\n");
 		printf("\t\t\t@主選單@\n"); 
-		printf("\t(1) 讀檔並寫入檔案\n\t(2) 搜尋資料\n\t(3) 新增資料\n\t(4) 刪除資料\n\t(5) 顯示資料庫狀態\n\t(6) 自動寫入並搜尋\n\t(7) 自動寫入並刪除\n\t(8) 自動刪一增一\n\t(9) 清空資料庫\n\t(10) 產檔跑n次\n\t(0) 結束程式\n");
+		printf("\t(1) 讀檔並寫入檔案\n\t(2) 搜尋資料\n\t(3) 新增資料\n\t(4) 刪除資料\n\t(5) 顯示資料庫狀態\n\t(6) 自動寫入並搜尋\n\t(7) 自動寫入並刪除\n\t(8) 自動刪一增一\n\t(9) 清空資料庫\n\t(10) 產隨機檔執行n次統計\n\t(0) 結束程式\n");
 		printf("\t請輸入選擇: "); scanf("%d", &flag);
 		Ctimes=0; Total=0; Ftimes=0;
 	//結束程式
@@ -213,17 +214,15 @@ int DB_FIND(TABLE *DB, char *target, int *Ctimes){
 		address = HASH(target), flag=0;
 	NODE *ptr;
 
-	Ctimes[0]+=1; //comparison times
-	while(DB[address].N){
-		Ctimes[0]+=2; //comparison times
+	while(DB[address].N){ 
 		if(num>DB[address].max||num<DB[address].min) break; //not find
 		ptr=DB[address].next;
-		while(ptr!=NULL && num>=HASH_ORIGIN(ptr->val)){
+		while(ptr!=NULL){	
+			Ctimes[0]+=1; //comparison times
 			if(STR_SAME(ptr->val, target)) { printf("#Find at %d\n\n", address); return 1; }//find
 			ptr=ptr->next;
-			Ctimes[0]+=1; flag=1; //comparison times
+			if(ptr&&num<HASH_ORIGIN(ptr->val)) break;	
 		}
-		if( ! flag) Ctimes[0]+=1; //comparison times
 		break;
 	}
 	printf("( Not Find )\n\n");
