@@ -1,69 +1,99 @@
-#include<stdio.h>  
-#include<stdlib.h>  
-#include<string.h>
-// DEFINE
-#define VAL_SIZE 20
-// STRUCT
-typedef struct tr{
-	char val[VAL_SIZE];
-	struct tr *left, *right;
+#include<stdio.h>
+#include<stdlib.h>
+//========== DEFINE ==========
+typedef struct tree{
+   int val;
+   struct tree *left, *right;
 }NODE;
-// FUNCTION ANNOUNCEMENT
-void TREE_INIT_NODE(NODE **node);
-void TREE_INSERT(NODE *root, char *element);
-void TREE_PRINT(NODE *root);
-// MAIN
+//========== FUNCTION ANNOUNCEMENT ==========
+NODE* AVL_INSERT(NODE *root, int element); //insert element to avl-tree
+NODE* AVL_NODE(int element); //create node
+
+int AVL_BF(NODE *root); //calculate BF value
+int AVL_HEIGHT(NODE* root);
+
+NODE* AVL_L_ROTATE(NODE *root); // rotate
+NODE* AVL_R_ROTATE(NODE *root);
+NODE* AVL_LR_ROTATE(NODE *root);
+NODE* AVL_RL_ROTATE(NODE *root);
+
+void AVL_PRINT(NODE *root); //preorder print
+//========== MAIN ===========
 int main(void){
-// variable annoucement  
-	char input[][VAL_SIZE]= { "321","543","123","765","234","432","756" };
-	NODE *root;
-// initialize root of tree
-	TREE_INIT_NODE(&root);
-// insert element to tree
-	for(int i=0;i<7;i++) TREE_INSERT(root, input[i]);
-// print tree
-	TREE_PRINT(root);
-// END
-    return 0;  
+   NODE *root=NULL;
+   // insert element
+   for(int i=1;i<15;i++) root = AVL_INSERT(root, i);
+   // print avl-tree (preorder)
+   AVL_PRINT(root); 
+   //END
+   return 0;
 }
-// FUNCTION
-// insert element to tree function
-void TREE_INSERT(NODE *root, char *element){
-	//tree is empty
-	if( ! root->val[0]) strcpy(root->val, element);
-	else{
-		//variable annoucement
-		int flag=1;
-		NODE *newnode, 
-			 *tmp=root; 
-		// initialize variable
-		TREE_INIT_NODE(&newnode);
-		strcpy(newnode->val, element);
-		// insert compution 
-		while(flag){
-			// if element > val
-			if( strcmp(tmp->val, element) < 0 ){
-				if(tmp->right == NULL) { tmp->right=newnode; return; }
-				tmp=tmp->right; continue;
-			// if element < val
-			}else if( strcmp(tmp->val, element) > 0 ){
-				if(tmp->left == NULL) { tmp->left=newnode; return; }
-				tmp=tmp->left; continue;
-			// if element == val
-			}else printf("\n\t| Data already exist! |\n");
-		}
-	}
+//========== FUNCTION ==========
+// insert element to avl-tree
+NODE* AVL_INSERT(NODE* root, int element){
+   if(root == NULL) root = AVL_NODE(element);
+   else if(element < root->val) root->left = AVL_INSERT(root->left, element);
+   else if(element > root->val) root->right = AVL_INSERT(root->right, element);
+   else { printf("\n( element is exist! )\n"); return root; }
+
+   if(AVL_BF(root)>1 && element < root->left->val)
+      return AVL_R_ROTATE(root);
+   if(AVL_BF(root)<-1 && element > root->right->val)
+      return AVL_L_ROTATE(root);
+   if(AVL_BF(root)>1 && element > root->left->val)
+      return AVL_LR_ROTATE(root);
+   if(AVL_BF(root)<-1 && element < root->right->val)
+      return AVL_RL_ROTATE(root);
+
+   return root;
 }
-// initialize node
-void TREE_INIT_NODE(NODE **node){
-	*node=(NODE*)malloc(sizeof(NODE));
-	memset((*node)->val,'\0',VAL_SIZE); (*node)->left=NULL; (*node)->right=NULL;
+// calculate BF value
+int AVL_BF(NODE* root){
+   int left_H = AVL_HEIGHT(root->left);
+   int right_H = AVL_HEIGHT(root->right);
+   return (left_H - right_H);
 }
-// inorder print tree
-void TREE_PRINT(NODE *root){
-	if(root!=NULL){
-		TREE_PRINT(root->left);
-		printf("[%s]->", root->val);
-		TREE_PRINT(root->right);
-	}
+int AVL_HEIGHT(NODE* root){
+   if(root == NULL) return 0;
+   else{
+      int lh = AVL_HEIGHT(root->left);
+      int rh = AVL_HEIGHT(root->right);
+      return (lh > rh) ? (lh + 1) : (rh + 1);
+   }
 }
+// rotate
+NODE* AVL_L_ROTATE(NODE *root){
+   NODE* aux = root->right;
+   root->right = aux->left;
+   aux->left = root;
+   return aux;
+}
+NODE* AVL_R_ROTATE(NODE *root){
+   NODE* aux = root->left;
+   root->left = aux->right;
+   aux->right = root;
+   return aux;
+}
+NODE* AVL_LR_ROTATE(NODE *root){
+   root->left = AVL_L_ROTATE(root->left);
+   return AVL_R_ROTATE(root);
+}
+NODE* AVL_RL_ROTATE(NODE *root){
+   root->right = AVL_R_ROTATE(root->right);
+   return AVL_L_ROTATE(root);
+}
+// preorder print
+void AVL_PRINT(NODE *root){
+   if(root!=NULL){
+      printf("[%d]->", root->val);
+      AVL_PRINT(root->left);
+      AVL_PRINT(root->right);
+   }
+}
+// create newnode
+NODE* AVL_NODE(int element){
+   NODE *newnode = (NODE*)malloc(sizeof(NODE));
+   newnode->val = element; newnode->left=NULL; newnode->right=NULL;
+   return newnode;
+}
+
