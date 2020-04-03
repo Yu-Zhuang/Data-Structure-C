@@ -6,7 +6,6 @@
 void QUICK_SORT(int *nums, int left, int right);
 void PRINT_NUMS(int *nums, int numsSize) { for(int i=0;i<numsSize;i++) printf("%d ", nums[i]); printf("\n"); }
 void SWAP(int *a, int *b) { a[0]=b[0]+a[0]-(b[0]=a[0]); }
-void Quick(int *nums, int left, int right);
 
 int main(void){
 	int list[SIZE]={7,6,5,4,3,2,1};
