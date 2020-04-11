@@ -28,7 +28,6 @@ typedef struct table{
 }TABLE; 
 typedef struct q{
    int val;
-   int fold;
    struct q *next;
 }QUEUE;
 // ***** FUNCTION ANNOUNCEMENT *****
@@ -47,6 +46,7 @@ int ROUTE_FIND(TABLE *DB, int start, int end);
 void ENQUEUE(QUEUE *head, int element);
 int DEQUEUE(QUEUE *head);
 void QUEUE_PRINT(QUEUE *head);
+
 void CTABLE_PRINT(int *table);
 // ***** MAIN *****
 int main(void){
@@ -133,19 +133,19 @@ int ROUTE_FIND(TABLE *DB,int start, int end){
       if(pos==target) break; 
       
       //找附近車站 並放入Q
-      printf("搜尋站: [[%d]]\n", pos->name); //
-      printf("已搜尋站: "); CTABLE_PRINT(table); //
-      //計算第幾層
+      printf("搜尋站: [[%d]]\n", pos->name); //print status
+      printf("已搜尋站: "); CTABLE_PRINT(table); //print status
+      
+      //enqueue and calculate fold
       if((pos->B&&fold[pos->B->name]==0) || (pos->F&&fold[pos->F->name]==0) || (pos->S&&fold[pos->S->name]==0) || (pos->N&&fold[pos->N->name]==0)){
+         //計算第幾層 
          fd=fold[pos->name]+1;
       }
-      //
-      if(pos->B) { fold[pos->B->name]=fd;  if(pos->B==target) {ret+=1; break;}  ENQUEUE(Q,pos->B->name); }    
-      if(pos->F) { fold[pos->F->name]=fd; if(pos->F==target) {ret+=1; break;} ENQUEUE(Q,pos->F->name); }
-      if(pos->S) { fold[pos->S->name]=fd; if(pos->S==target) {ret+=1; break;} ENQUEUE(Q,pos->S->name); }
-      if(pos->N) { fold[pos->N->name]=fd; if(pos->N==target) {ret+=1; break;} ENQUEUE(Q,pos->N->name); }         
-      
-      printf("QUEUE: "); QUEUE_PRINT(Q); //
+      if(pos->B&&fold[pos->B->name]==0) { fold[pos->B->name]=fd;  if(pos->B==target) {ret+=1; break;}  ENQUEUE(Q,pos->B->name); }    
+      if(pos->F&&fold[pos->F->name]==0) { fold[pos->F->name]=fd; if(pos->F==target) {ret+=1; break;} ENQUEUE(Q,pos->F->name); }
+      if(pos->S&&fold[pos->S->name]==0) { fold[pos->S->name]=fd; if(pos->S==target) {ret+=1; break;} ENQUEUE(Q,pos->S->name); }
+      if(pos->N&&fold[pos->N->name]==0) { fold[pos->N->name]=fd; if(pos->N==target) {ret+=1; break;} ENQUEUE(Q,pos->N->name); }  
+      printf("QUEUE: "); QUEUE_PRINT(Q); //print status
       
       //找下一車站;
       pos=DB[DEQUEUE(Q)].site;
