@@ -147,8 +147,11 @@ void QUEUE_ENQUEUE(NODE *Q, int element){
 }
 int QUEUE_DEQUEUE(NODE *Q){
 	if(Q->next){
+		NODE *tmp;
+		tmp=Q->next;
 		int ret=Q->next->val;
 		Q->next=Q->next->next;
+		free(tmp);
 		return ret;
 	}
 	return 0;
@@ -163,8 +166,11 @@ void STACK_PUSH(NODE *S, int element){
 }
 int STACK_POP(NODE *S){
 	if(S->next){
+		NODE *tmp;
+		tmp=S->next;
 		int ret=S->next->val;
 		S->next=S->next->next;
+		free(tmp);
 		return ret;
 	}
 	return 0;
