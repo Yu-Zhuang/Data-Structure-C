@@ -1,15 +1,19 @@
-/*
-*	Adjacent Linked List implement Graph data structure.
-*	graph:
-*		[vertex]	[adjacent]
-*   		1		|-[2]-[5]-|END
-*   		2		|-[1]-[3]-[5]-[4]-|END
-*   		3		|-[2]-[4]-[6]-|END
-*   		4		|-[2]-[3]-[5]-[6]-|END
-*   		5		|-[1]-[2]-[4]-[6]-|END
-*   		6		|-[3]-[4]-[5]-|END
-*	Date: 2020.4.12
-*/
+	/*********************************************************************
+	*																	 *
+	*	Content: Adjacent Linked List implement Graph data structure.    *
+	*	Graph:															 *
+	*        	[1] 													 *
+	*		   /   \ 													 *	
+	*		 [5]  [2] 													 *		
+	*		 |  \/  | 													 *	
+	*		 |  [4] | 													 *
+	*		 | /  \ |													 *
+	*       [6]    [3] 													 *	
+	* 																	 *		
+	*	Date: 2020.4.12													 *
+	* 																	 *
+	**********************************************************************/
+
 // *** HEADER file ***
 #include<stdio.h>
 #include<stdlib.h>
@@ -41,7 +45,7 @@ int LINK_FIND(NODE *link, int target); // find return 1, not find return 0;
 // *** MAIN ***
 int main(void){
 	// variable
-	char file[]="graph.cpp";
+	char file[]="graph.c";
 	int input[MAX][2], iSize=0;
 	NODE table[MAX];
 	// conpution
@@ -74,7 +78,8 @@ void GRAPH_BSF(NODE *table, int start){
 				}printf("|\nQueue: ");
 				LINK_PRINT(q);
 			}
-			(q->next!=NULL) ? target=QUEUE_DEQUEUE(q):flag=0;
+			if(q->next!=NULL) target=QUEUE_DEQUEUE(q); 
+			else flag=0;
 		}while(flag);
 		printf("********* END_GRAPH_BSF *********\n\n");
 	}
@@ -98,7 +103,8 @@ void GRAPH_DSF(NODE *table, int start){
 				}printf("|\nStack: "); 
 				LINK_PRINT(s);
 			}
-			(s->next!=NULL) ? target=STACK_POP(s):flag=0;
+			if(s->next!=NULL) target=STACK_POP(s); 
+			else flag=0;
 		}while(flag);
 		printf("********* END_GRAPH_DSF *********\n\n");
 	}	
