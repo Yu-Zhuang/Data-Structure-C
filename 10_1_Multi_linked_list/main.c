@@ -51,7 +51,7 @@ void CTABLE_PRINT(int *table);
 // ***** MAIN *****
 int main(void){
    // VARIABLE announcement
-   char file[ROUTE_NUM][6]={"1.cpp", "2.cpp", "3.cpp", "4.cpp", "5.cpp"};
+   char file[ROUTE_NUM][6]={"1.c", "2.c", "3.c", "4.c", "5.c"};
    int input[ROUTE_NUM][MAX_SIZE], size[ROUTE_NUM]={0}, total=0;
    TABLE DB[MAX_SIZE];
    MAP map;
