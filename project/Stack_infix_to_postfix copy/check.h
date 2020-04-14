@@ -15,20 +15,20 @@ int CHECK_STACK_POP(S *s, char target);
 
 bool CHECK_SEQ(char input[][MAX], int size){
     if(input[0][0]=='+'||input[0][0]=='-'||input[0][0]=='*'||input[0][0]=='/'){
-        printf("\t[ error 0061: Inappropriate sequence! ]\n");
+        printf("\t[ error 006: Inappropriate sequence! ]\n");
         return false;
     }
     int i=0;
     while(i!=size){
         if((input[i][0]=='('||input[i][0]=='['||input[i][0]=='{')&& i+1!=size){
             if(input[i+1][0]=='+'||input[i+1][0]=='-' || input[i+1][0]=='*' || input[i+1][0]=='/'){
-                printf("\t[ error 0062: Inappropriate sequence! ]\n");
+                printf("\t[ error 006: Inappropriate sequence! ]\n");
                 return false;
             }
         }
         else if((input[i][0]==')'||input[i][0]==']'||input[i][0]=='}')&& i!=0){
             if(input[i-1][0]=='+'||input[i-1][0]=='-' || input[i-1][0]=='*' || input[i-1][0]=='/'){
-                printf("\t[ error 0063: Inappropriate sequence! ]\n");
+                printf("\t[ error 006: Inappropriate sequence! ]\n");
                 return false;
             }
         }
