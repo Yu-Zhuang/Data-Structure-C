@@ -20,6 +20,9 @@ int main(void){
     char input[MAX][MAX], take[MAX]; memset(take,'\0', MAX);
     int size=0; //how many element in formula
     //  CONPUTION
+    printf("************************************\n");
+    printf("*          中序式轉後序式          *\n");
+    printf("************************************\n\n");
     int flag=1;
     while(flag){
         //  initialize
@@ -31,19 +34,21 @@ int main(void){
         // check formular
         if( ! FORMULAR_CHECK(input, size)) goto end;
         //  turn to postfix
-        printf("\n\t#INFIX_TO_POSTFIX#\nin_to_post轉換堆疊: \n");
+        printf("\n==== #INFIX_TO_POSTFIX# ====\n中序轉後序堆疊: \n");
         FORMULAR_IN_TO_POST_FIX(input, size, take);
         printf("* 轉換結果: ");
         puts(take);
+        printf("-------------------------------\n");
         // calculate postfix 
-        printf("\n\t@POSTFIX_EVALUATION@\n計算堆疊: \n");
-        printf("* 計算結果: %.2lf\n\n", FORMULAR_CALCULATE(take)); 
+        printf("\n==== @POSTFIX_EVALUATION@ ====\n計算堆疊: \n");
+        printf("* 計算結果: %.2lf\n", FORMULAR_CALCULATE(take));
+        printf("-------------------------------\n\n"); 
         // 
         end: 
         printf("繼續按1, 結束按0: ");
         scanf("%d", &flag); getchar();
         if(flag) printf("\n=================================\n\n");    
-    }   
+    } 
     //  END
     return 0;
 }
