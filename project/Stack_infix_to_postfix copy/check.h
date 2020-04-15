@@ -5,11 +5,11 @@ typedef struct s{
     char val;
     struct s *next;
 }S;
-
+    //check
 bool CHECK_PRTHSES(char input[][MAX], int size);
 bool CHECK_OPERA(char input[][MAX], int size);
 bool CHECK_SEQ(char input[][MAX], int size);
-
+    //stack
 void CHECK_STACK_PUSH(S *s, char element);
 int CHECK_STACK_POP(S *s, char target);
 
@@ -36,17 +36,18 @@ bool CHECK_SEQ(char input[][MAX], int size){
     }
     return true;
 }
+
 bool CHECK_OPERA(char input[][MAX], int size){
     int i=0, flag=0;
 
     while(i!=size){
-        if(((input[i][0]>='0'&&input[i][0]<='9')||(input[i][0]>='A'&&input[i][0]<='Z')||(input[i][0]>='a'&&input[i][0]<='z'))&& flag==0){
+        if(((input[i][0]>='A'&&input[i][0]<='Z')||(input[i][0]>='a'&&input[i][0]<='z'))&& flag==0){
             flag=1;
         }
         else if( (input[i][0]=='+'||input[i][0]=='-' || input[i][0]=='*' || input[i][0]=='/') && flag==1){
             flag=0;
         }else{
-            if(input[i][0]>='0'&&input[i][0]<='9'){
+            if(input[i][0]>='A'&&input[i][0]<='Z'){
                 printf("\t[ error 004: Operands without operators! ]\n");
                 return false;
             }
@@ -63,6 +64,7 @@ bool CHECK_OPERA(char input[][MAX], int size){
     }
     return true;
 }
+
 bool CHECK_PRTHSES(char input[][MAX], int size){
     S *head=(S*)malloc(sizeof(S));
     head->next=NULL;
@@ -89,12 +91,14 @@ bool CHECK_PRTHSES(char input[][MAX], int size){
         return false;
     }
 }
+
 void CHECK_STACK_PUSH(S *s, char element){
     S *newnode=(S*)malloc(sizeof(S));
     newnode->val=element;
     newnode->next=s->next;
     s->next=newnode;
 }
+
 int CHECK_STACK_POP(S *s, char target){
     if(s->next){
     	if( s->next->val==target){

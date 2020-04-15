@@ -23,6 +23,7 @@ void NUM_Stack_PUSH(NUM_Stack *s, double element){
     newnode->next = s->next;
     s->next = newnode;    
 }
+
 double NUM_Stack_POP(NUM_Stack *s){
     if(s->next){
         NUM_Stack *tmp=s->next;
@@ -34,6 +35,7 @@ double NUM_Stack_POP(NUM_Stack *s){
     printf("\t[ warning: NUM_Stack is empty! ]\n");
     return NULL;    
 }
+
 void STACK_PUSH(Stack *s, char element){
     Stack *newnode=(Stack*)malloc(sizeof(Stack));
     newnode->val=element;
@@ -60,6 +62,7 @@ void LINK_PRINT(Stack *s){
     while(s){ printf("%c, ", s->val); s=s->next; }
     printf("\n");
 }
+
 void NUM_LINK_PRINT(NUM_Stack *s){
     if(! s->next) return ;
     s=s->next;
