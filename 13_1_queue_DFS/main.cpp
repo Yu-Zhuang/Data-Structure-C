@@ -51,6 +51,7 @@ int main(void){
     DB_RECORD_CLEAR(DB, DB_size);
     DB_BSF_SECOND(DB, start, DB_size);
     DB_RECORD_CLEAR(DB, DB_size);
+    DB_DSF_FIND_PATH(DB, start, end, DB_size);
 
     return 0;
 }
@@ -60,44 +61,42 @@ void DB_DSF_FIND_PATH(LIST *DB, char *start, char *end, int DB_size){
     stack->next = NULL;
     int flag=0, find=0, count=0; // flag:紀錄該路是否已到終點; find:紀錄是否能從start到end
     LIST *tmp=NULL;
+    printf("FIND %s -> %s : ", start, end);
     PUSH(stack, start);
-    tmp = DB_FIND(DB, start, DB_size);
-    tmp->status = 1;
     while(stack->next){ // stack is empty or not?
-        if( strcmp(stack->next->name, end)){ //找到 end 
+        if( ! strcmp(stack->next->name, end) ){ //找到 end 
             find = 1; // record: 該圖start可到end 
             // print result
             while(stack->next){
                 tmp = DB_FIND(DB, POP(stack), DB_size);
                 if(tmp->status){
                     printf("[%s]-", tmp->name);
+                    DB_FIND(DB, tmp->name, DB_size)->status = 0;
                     count+=1;
                 }
             }
-            printf("Count: %d\n", count);
+            printf("|END\nCount: %d\n", count-1);
             return;
         }
         else{ // 未找到 end
+            flag = 0;
             tmp = DB_FIND(DB, stack->next->name, DB_size);
-            NODE *node_tmp = tmp;
-            while()
-            for(int i=0;i<DB_size;i++){
+            tmp->status = 1;
+            NODE *nodePtr = tmp->next;
+            while(nodePtr){
                 //周遭是否還有未拜訪的點
-                if( !(DB_FIND(DB, temp;, DB_size)->status)){ 
-                    STACK_PUSH(stack,-i); 
-                    flag = 1;               
+                if( DB_FIND(DB, nodePtr->name, DB_size)->status == 0 ){
+                    PUSH(stack, nodePtr->name);
+                    flag = 1;
                 }
+                nodePtr = nodePtr->next;
             }
             if(!flag){ //該路已到終點, 回到分支點
-                while(stack->next && stack->next->val >= 0 ) check[STACK_POP(stack)]=0;
+                while(stack->next && DB_FIND(DB,stack->next->name,DB_size)->status ) DB_FIND(DB, POP(stack), DB_size)->status=0;
                 // 如果走完
-                if(! stack->next)
-                    { for(int i=0;i<minpath_Size;i++) path[i]=min_path[i]; pathSize[0]=minpath_Size; pathWeight[0]=min_weight; return find; }       
+                if(! stack->next) break;      
             }
-            stack->next->val *= -1; // 將stack.top 改為 造訪中狀態
-            STACK *tmp = stack; 
-            // 將造訪中的點 紀錄至 check[] 
-            while(tmp->next) { if(tmp->next->val>=0) check[tmp->next->val]=1; tmp = tmp->next; }
+            DB_FIND(DB,stack->next->name,DB_size)->status = 1; // 將stack.top 改為 造訪中狀態
         }
     }
     printf("[ 未找到 ]\n"); 
@@ -275,4 +274,3 @@ void DB_RECORD_CLEAR(LIST *DB, int DB_size){
     for(int i=0;i<DB_size;i++)
         DB[i].status = 0;
 }
-
