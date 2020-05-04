@@ -1,7 +1,7 @@
 John Nabil Greg Irwin Rishi
 Larissa Nabil Greg Brady
 Nabil Larissa John Cian Anisah Greg
-Greg Nabil Larissa John Brady Rishi Xavier Miliie Mary Anisah
+Greg Nabil Larissa John Brady Rishi Xavier Millie Mary Anisah
 Anisah Greg Nabil Maria Sallie Jago Karam
 Mary Greg Irwin Maia
 Millie Greg Brady

@@ -38,21 +38,35 @@ char* POP(NODE *head);
 void PUSH(NODE *head, char *element);
 // ============= MAIN ===============
 int main(void){
-    char file[] = "graph.cpp";
+    char file[] = "graph.cpp",
+         tmp[MAX]={'\0'}, //for input chose;
+         start[]="John",
+         end[]="Mary";
     LIST DB[DB_MAX];
-    int DB_size=0;
-    char start[]="John", end[]="Mary";
+    int DB_size=0, chose=1;
 
     FILE_GET(file, DB, &DB_size);
-    DB_PRINT(DB, DB_size);
-    DB_BSF(DB, start, DB_size);
-    DB_RECORD_CLEAR(DB, DB_size);
-    DB_DSF(DB, start, DB_size);
-    DB_RECORD_CLEAR(DB, DB_size);
-    DB_BSF_SECOND(DB, start, DB_size);
-    DB_RECORD_CLEAR(DB, DB_size);
-    DB_DSF_FIND_PATH(DB, start, end, DB_size);
+    while(chose){
+        printf("\n\t@主選單@\n(1)顯示圖\n(2)BFS\n(3)DSF\n(4)找距該點2層的所有點\n(5)找2點的一個路徑與距離(非最短)\n輸入選擇: ");
+        scanf("%s", tmp);
+        if(tmp[0]<'0'||tmp[0]>'9') { printf("[ 輸入錯誤! ]\n"); continue; }
+        sscanf(&tmp[0], "%d", &chose);
 
+        if(chose == 1)
+            DB_PRINT(DB, DB_size);  
+        else if(chose == 2)
+            DB_BSF(DB, start, DB_size);
+        else if(chose == 3)
+            DB_DSF(DB, start, DB_size);
+        else if(chose == 4)
+            DB_BSF_SECOND(DB, start, DB_size);
+        else if(chose == 5)
+            DB_DSF_FIND_PATH(DB, start, end, DB_size);
+        else if(chose != 0)
+            { printf("[ 輸入錯誤! ]\n"); continue; }
+        DB_RECORD_CLEAR(DB, DB_size);
+    }
+    
     return 0;
 }
 // ================ FUNCTION ===============
@@ -61,7 +75,7 @@ void DB_DSF_FIND_PATH(LIST *DB, char *start, char *end, int DB_size){
     stack->next = NULL;
     int flag=0, find=0, count=0; // flag:紀錄該路是否已到終點; find:紀錄是否能從start到end
     LIST *tmp=NULL;
-    printf("FIND %s -> %s : ", start, end);
+    printf("FIND %s -> %s :\n\t", start, end);
     PUSH(stack, start);
     while(stack->next){ // stack is empty or not?
         if( ! strcmp(stack->next->name, end) ){ //找到 end 
@@ -70,12 +84,12 @@ void DB_DSF_FIND_PATH(LIST *DB, char *start, char *end, int DB_size){
             while(stack->next){
                 tmp = DB_FIND(DB, POP(stack), DB_size);
                 if(tmp->status){
-                    printf("[%s]-", tmp->name);
+                    printf("[%s]<-", tmp->name);
                     DB_FIND(DB, tmp->name, DB_size)->status = 0;
                     count+=1;
                 }
             }
-            printf("|END\nCount: %d\n", count-1);
+            printf("|START\nCount: %d\n", count-1);
             return;
         }
         else{ // 未找到 end
@@ -106,16 +120,17 @@ void DB_BSF_SECOND(LIST *DB, char *start, int DB_size){
     S->next = NULL;
     LIST *site = DB_FIND(DB, start, DB_size);
     site->status = 1;
-    printf("Nod have two distance from [%s]: ", site->name);
+    printf("Node that have two distance from [%s]:\n\t", site->name);
     NODE *tmp = site->next;
     while(tmp){
         PUSH(S, tmp->name);
+        DB_FIND(DB, tmp->name, DB_size)->status = 2;
         tmp = tmp->next;
     }
     while(S->next){
         site = DB_FIND(DB, POP(S), DB_size);
-        if( ! site->status){
-            site->status = 1;
+        if(site->status == 0 || site->status==2){
+            if(site->status==0) site->status = 1;
             //printf("[%s]-", site->name);
             tmp = site->next;
             LIST *second = NULL;
@@ -123,20 +138,20 @@ void DB_BSF_SECOND(LIST *DB, char *start, int DB_size){
                 second = DB_FIND(DB, tmp->name, DB_size);
                 if(!second->status){
                     second->status = 1;
-                    printf("[%s]-", second->name);
+                    printf("[%s], ", second->name);
                 }
                 tmp = tmp->next;
             }          
         }
     } 
-    printf("|\n");     
+    printf("|END\n");     
 }
 void DB_BSF(LIST *DB, char *start, int DB_size){
     QUEUE *Q = (QUEUE*)malloc(sizeof(QUEUE));
     Q->next = NULL; Q->rear = NULL;
     LIST *site = DB_FIND(DB, start, DB_size);
     site->status = 1;
-    printf("BSF start [%s]: ", site->name);
+    printf("BFS start [%s]:\n\t", site->name);
     NODE *tmp = site->next;
     while(tmp){
         EN_QUEUE(Q, tmp->name);
@@ -154,14 +169,14 @@ void DB_BSF(LIST *DB, char *start, int DB_size){
             }          
         }
     }
-    printf("|\n");
+    printf("|END\n");
 }
 void DB_DSF(LIST *DB, char *start, int DB_size){
     NODE *S = (NODE*)malloc(sizeof(NODE));
     S->next = NULL;
     LIST *site = DB_FIND(DB, start, DB_size);
     site->status = 1;
-    printf("DSF start [%s]: ", site->name);
+    printf("DFS start [%s]:\n\t", site->name);
     NODE *tmp = site->next;
     while(tmp){
         PUSH(S, tmp->name);
@@ -179,7 +194,7 @@ void DB_DSF(LIST *DB, char *start, int DB_size){
             }          
         }
     }
-    printf("|\n");    
+    printf("|END\n");    
 }
 LIST* DB_FIND(LIST *DB, char *target, int DB_size){
     for(int i=0;i<DB_size;i++)
@@ -261,12 +276,12 @@ void DB_PRINT(LIST *DB, int DB_size){
     for(int i=0;i<DB_size;i++){
         if(DB[i].next){
             tmp = DB[i].next;
-            printf("%4d. %s: ",i+1, DB[i].name);
+            printf("%3d. %s:\t",i+1, DB[i].name);
             while(tmp){
                 printf("[%s]-", tmp->name);
                 tmp = tmp->next;
             }
-            printf("|\n");
+            printf("|END\n");
         }
     }
 }
