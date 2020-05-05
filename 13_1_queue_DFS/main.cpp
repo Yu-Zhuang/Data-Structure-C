@@ -84,7 +84,8 @@ void DB_DSF_FIND_PATH(LIST *DB, char *start, char *end, int DB_size){
                     count+=1;
                 }
             }
-            printf("|START\nCount: %d\n", count-1);
+            if( strcmp(start,end) ) printf("|START\nCount: %d\n", count-1);
+            else printf("Count: %d\n", count);
             return;
         }
         else{ // 未找到 end
