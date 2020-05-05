@@ -36,22 +36,24 @@ char* DE_QUEUE(QUEUE *head);
 void EN_QUEUE(QUEUE *head, char *element);
 char* POP(NODE *head);
 void PUSH(NODE *head, char *element);
+
+void GET_START_END(char *start, char *end, int chose);
 // ============= MAIN ===============
 int main(void){
     char file[] = "graph.cpp",
          tmp[MAX]={'\0'}, //for input chose;
-         start[]="John",
-         end[]="Mary";
+         start[MAX]="John",
+         end[MAX]="Mary";
     LIST DB[DB_MAX];
     int DB_size=0, chose=1;
 
     FILE_GET(file, DB, &DB_size);
     while(chose){
         printf("\n\t@主選單@\n(1)顯示圖\n(2)BFS\n(3)DSF\n(4)找距該點2層的所有點\n(5)找2點的一個路徑與距離(非最短)\n輸入選擇: ");
-        scanf("%s", tmp);
+        scanf("%s", tmp); getchar();
         if(tmp[0]<'0'||tmp[0]>'9') { printf("[ 輸入錯誤! ]\n"); continue; }
         sscanf(&tmp[0], "%d", &chose);
-
+        GET_START_END(start, end, chose);
         if(chose == 1)
             DB_PRINT(DB, DB_size);  
         else if(chose == 2)
@@ -70,16 +72,28 @@ int main(void){
     return 0;
 }
 // ================ FUNCTION ===============
+void GET_START_END(char *start, char *end, int chose){
+    if(chose >= 2 && chose <=4){
+        printf("請輸入起點: ");
+        scanf("%s", start); getchar();
+    }
+    else if(chose == 5){
+        printf("請依序輸入 起點 終點: ");
+        scanf("%s %s", start, end); getchar();
+        puts(start);
+        puts(end);
+    }
+}
 void DB_DSF_FIND_PATH(LIST *DB, char *start, char *end, int DB_size){
+    if(DB_FIND(DB, start, DB_size) == NULL) {printf("[ 沒有該起點! ]\n"); return;}
     NODE *stack = (NODE*)malloc(sizeof(NODE)); // stack
     stack->next = NULL;
-    int flag=0, find=0, count=0; // flag:紀錄該路是否已到終點; find:紀錄是否能從start到end
+    int flag=0, count=0; // flag:紀錄該路是否已到終點; 
     LIST *tmp=NULL;
     printf("FIND %s -> %s :\n\t", start, end);
     PUSH(stack, start);
     while(stack->next){ // stack is empty or not?
         if( ! strcmp(stack->next->name, end) ){ //找到 end 
-            find = 1; // record: 該圖start可到end 
             // print result
             while(stack->next){
                 tmp = DB_FIND(DB, POP(stack), DB_size);
@@ -289,3 +303,4 @@ void DB_RECORD_CLEAR(LIST *DB, int DB_size){
     for(int i=0;i<DB_size;i++)
         DB[i].status = 0;
 }
+
