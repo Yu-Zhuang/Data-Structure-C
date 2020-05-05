@@ -71,7 +71,7 @@ int main(void){
 }
 // ================ FUNCTION ===============
 void DB_DSF_FIND_PATH(LIST *DB, char *start, char *end, int DB_size){
-    if( ! DB_FIND(DB, start, DB_size) ) 
+    if( ! DB_FIND(DB, start, DB_size) || ! DB_FIND(DB, end, DB_size)) 
         { printf("\t[ 沒有該起點! ]\n"); return; }
     printf("FIND \"%s\" -> \"%s\":\n\t", start, end);
     int flag=0, count=0; // flag:紀錄該路是否已到終點; 
