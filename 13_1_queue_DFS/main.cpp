@@ -91,17 +91,11 @@ void DB_DSF_FIND_PATH(LIST *DB, char *start, char *end, int DB_size){
                     count+=1;
                 }
             }
-            //if( strcmp(start,end) ) 
-                printf("|START\nCount: %d\n", count-1);
-            //else 
-                //printf("Count: %d\n", count);
+            printf("|START\nCount: %d\n", count-1);
             return;
         }
         else{ // 未找到 end
             flag = 0;
-            //tmp = DB_FIND(DB, stack->next->name, DB_size);
-            //tmp->status = 1;
-            //NODE *nodePtr = tmp->next;
             NODE *nodePtr = DB_FIND(DB, stack->next->name, DB_size)->next;
             while(nodePtr){
                 //周遭是否還有未拜訪的點
@@ -126,22 +120,21 @@ void DB_DSF_FIND_PATH(LIST *DB, char *start, char *end, int DB_size){
 void DB_BSF_SECOND(LIST *DB, char *start, int DB_size){
     if( ! DB_FIND(DB, start, DB_size) )
         { printf("\t[ 沒有該起點! ]\n"); return; }
-    NODE *S = (NODE*)malloc(sizeof(NODE));
-    S->next = NULL;
+    QUEUE *Q = (QUEUE*)malloc(sizeof(QUEUE));
+    Q->next = NULL; Q->rear = NULL;
     LIST *site = DB_FIND(DB, start, DB_size);
     site->status = 1;
     printf("Node that have two distance from [%s]:\n\t", site->name);
     NODE *tmp = site->next;
     while(tmp){
-        PUSH(S, tmp->name);
+        EN_QUEUE(Q, tmp->name);
         DB_FIND(DB, tmp->name, DB_size)->status = 2;
         tmp = tmp->next;
     }
-    while(S->next){
-        site = DB_FIND(DB, POP(S), DB_size);
+    while(Q->next){
+        site = DB_FIND(DB, DE_QUEUE(Q), DB_size);
         if(site->status == 0 || site->status==2){
             if(site->status==0) site->status = 1;
-            //printf("[%s]-", site->name);
             tmp = site->next;
             LIST *second = NULL;
             while(tmp){
@@ -307,10 +300,10 @@ void DB_RECORD_CLEAR(LIST *DB, int DB_size){
 }
 void GET_CHOSE(int *chose){
     char tmp[MAX]={'\0'}; //for input chose;
-    char hint[]="\n\t@主選單@\n (1) 顯示圖\n (2) BFS\n (3) DSF\n (4) 找距該點2層的所有點\n (5) 找2點的一個路徑與距離(非最短)\n (0) 結束\n輸入選擇: ";
+    char hint[]="\n\t@主選單@\n (1) 顯示圖\n (2) BFS\n (3) DFS\n (4) 找距該點2層的所有點\n (5) 找2點的一個路徑與距離(非最短)\n (0) 結束\n輸入選擇: ";
     while(1){
         printf("%s", hint);
-        scanf("%s", tmp); getchar();
+        scanf("%[^\n]", tmp); getchar();
         if(tmp[0]<'0'||tmp[0]>'9') 
             { printf("\t[ 輸入錯誤! ]\n"); continue; }
         else 
