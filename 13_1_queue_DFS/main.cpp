@@ -37,65 +37,46 @@ void EN_QUEUE(QUEUE *head, char *element);
 char* POP(NODE *head);
 void PUSH(NODE *head, char *element);
 
+void GET_CHOSE(int *chose);
 void GET_START_END(char *start, char *end, int chose);
 // ============= MAIN ===============
 int main(void){
-    char file[] = "graph.cpp",
-         tmp[MAX]={'\0'}, //for input chose;
-         start[MAX]="John",
-         end[MAX]="Mary";
-    LIST DB[DB_MAX];
+    char file[] = "graph.cpp", start[MAX]="John", end[MAX]="Mary";
     int DB_size=0, chose=1;
+    LIST DB[DB_MAX];
 
     FILE_GET(file, DB, &DB_size);
+
     while(chose){
-        printf("\n\t@主選單@\n(1)顯示圖\n(2)BFS\n(3)DSF\n(4)找距該點2層的所有點\n(5)找2點的一個路徑與距離(非最短)\n輸入選擇: ");
-        scanf("%s", tmp); getchar();
-        if(tmp[0]<'0'||tmp[0]>'9') { printf("[ 輸入錯誤! ]\n"); continue; }
-        sscanf(&tmp[0], "%d", &chose);
+        GET_CHOSE(&chose);
         GET_START_END(start, end, chose);
-        if(chose == 1)
-            DB_PRINT(DB, DB_size);  
-        else if(chose == 2)
-            DB_BSF(DB, start, DB_size);
-        else if(chose == 3)
-            DB_DSF(DB, start, DB_size);
-        else if(chose == 4)
-            DB_BSF_SECOND(DB, start, DB_size);
-        else if(chose == 5)
-            DB_DSF_FIND_PATH(DB, start, end, DB_size);
-        else if(chose != 0)
-            { printf("[ 輸入錯誤! ]\n"); continue; }
+        switch(chose){
+            case 0: goto end; break;
+            case 1: DB_PRINT(DB, DB_size); break;
+            case 2: DB_BSF(DB, start, DB_size); break;
+            case 3: DB_DSF(DB, start, DB_size); break;
+            case 4: DB_BSF_SECOND(DB, start, DB_size); break;
+            case 5: DB_DSF_FIND_PATH(DB, start, end, DB_size); break;
+            default: printf("\t[ 輸入錯誤! ]\n"); break;
+        }
         DB_RECORD_CLEAR(DB, DB_size);
     }
-    
+    end:
+    printf("\t[ 程式結束 ]\n");
     return 0;
 }
 // ================ FUNCTION ===============
-void GET_START_END(char *start, char *end, int chose){
-    if(chose >= 2 && chose <=4){
-        printf("請輸入起點: ");
-        scanf("%s", start); getchar();
-    }
-    else if(chose == 5){
-        printf("請依序輸入 起點 終點: ");
-        scanf("%s %s", start, end); getchar();
-        puts(start);
-        puts(end);
-    }
-}
 void DB_DSF_FIND_PATH(LIST *DB, char *start, char *end, int DB_size){
-    if(DB_FIND(DB, start, DB_size) == NULL) {printf("[ 沒有該起點! ]\n"); return;}
+    if( ! DB_FIND(DB, start, DB_size) ) {printf("\t[ 沒有該起點! ]\n"); return;}
     NODE *stack = (NODE*)malloc(sizeof(NODE)); // stack
     stack->next = NULL;
     int flag=0, count=0; // flag:紀錄該路是否已到終點; 
     LIST *tmp=NULL;
-    printf("FIND %s -> %s :\n\t", start, end);
+    printf("FIND \"%s\" -> \"%s\":\n\t", start, end);
     PUSH(stack, start);
     while(stack->next){ // stack is empty or not?
         if( ! strcmp(stack->next->name, end) ){ //找到 end 
-            // print result
-            while(stack->next){
+            while(stack->next){ // print result
                 tmp = DB_FIND(DB, POP(stack), DB_size);
                 if(tmp->status){
                     printf("[%s]<-", tmp->name);
@@ -127,9 +108,10 @@ void DB_DSF_FIND_PATH(LIST *DB, char *start, char *end, int DB_size){
             DB_FIND(DB,stack->next->name,DB_size)->status = 1; // 將stack.top 改為 造訪中狀態
         }
     }
-    printf("[ 未找到 ]\n"); 
+    printf("\t[ 未找到 ]\n"); 
 }
 void DB_BSF_SECOND(LIST *DB, char *start, int DB_size){
+    if( ! DB_FIND(DB, start, DB_size) ) {printf("\t[ 沒有該起點! ]\n"); return;}
     NODE *S = (NODE*)malloc(sizeof(NODE));
     S->next = NULL;
     LIST *site = DB_FIND(DB, start, DB_size);
@@ -161,6 +143,7 @@ void DB_BSF_SECOND(LIST *DB, char *start, int DB_size){
     printf("|END\n");     
 }
 void DB_BSF(LIST *DB, char *start, int DB_size){
+    if( ! DB_FIND(DB, start, DB_size) ) {printf("\t[ 沒有該起點! ]\n"); return;}
     QUEUE *Q = (QUEUE*)malloc(sizeof(QUEUE));
     Q->next = NULL; Q->rear = NULL;
     LIST *site = DB_FIND(DB, start, DB_size);
@@ -186,6 +169,7 @@ void DB_BSF(LIST *DB, char *start, int DB_size){
     printf("|END\n");
 }
 void DB_DSF(LIST *DB, char *start, int DB_size){
+    if( ! DB_FIND(DB, start, DB_size) ) {printf("\t[ 沒有該起點! ]\n"); return;}
     NODE *S = (NODE*)malloc(sizeof(NODE));
     S->next = NULL;
     LIST *site = DB_FIND(DB, start, DB_size);
@@ -214,7 +198,7 @@ LIST* DB_FIND(LIST *DB, char *target, int DB_size){
     for(int i=0;i<DB_size;i++)
         if(strcmp(DB[i].name, target) == 0)
             return &DB[i];
-    printf("[ Not Find: %s ]\n", target);
+    printf("\t[ Not Find: %s ]\n", target);
     return NULL;
 }
 char* POP(NODE *head){
@@ -233,7 +217,7 @@ void PUSH(NODE *head, char *element){
 }
 void EN_QUEUE(QUEUE *head, char *element){
     NODE *newnode = (NODE*)malloc(sizeof(NODE));
-    if( !newnode ) {printf("[ QUEUE is full ]"); return; } 
+    if( !newnode ) {printf("\t[ QUEUE is full ]"); return; } 
     strcpy(newnode->name, element);
     newnode->next = NULL;
     if(head->next)
@@ -246,7 +230,7 @@ char* DE_QUEUE(QUEUE *head){
     char *ret = (char*)malloc(sizeof(char)*MAX);
     memset(ret,'\0',MAX);
     NODE *tmp=NULL;
-    if( !head->next ) { printf("[ QUEUE is empty ]\n"); return ret; }
+    if( !head->next ) { printf("\t[ QUEUE is empty ]\n"); return ret; }
     strcpy(ret, head->next->name);
     tmp = head->next;
     head->next = head->next->next;
@@ -303,4 +287,25 @@ void DB_RECORD_CLEAR(LIST *DB, int DB_size){
     for(int i=0;i<DB_size;i++)
         DB[i].status = 0;
 }
-
+void GET_CHOSE(int *chose){
+    char tmp[MAX]={'\0'}; //for input chose;
+    char hint[]="\n\t@主選單@\n(1)顯示圖\n(2)BFS\n(3)DSF\n(4)找距該點2層的所有點\n(5)找2點的一個路徑與距離(非最短)\n(0)結束\n輸入選擇: ";
+    while(1){
+        printf("%s", hint);
+        scanf("%s", tmp); getchar();
+        if(tmp[0]<'0'||tmp[0]>'9') 
+            { printf("\t[ 輸入錯誤! ]\n"); continue; }
+        else 
+            { sscanf(&tmp[0], "%d", chose); break; }
+    }  
+}
+void GET_START_END(char *start, char *end, int chose){
+    if(chose >= 2 && chose <=4){
+        printf("請輸入起點: ");
+        scanf("%s", start); getchar();
+    }
+    else if(chose == 5){
+        printf("請依序輸入 起點 終點: ");
+        scanf("%s %s", start, end); getchar();
+    }
+}
