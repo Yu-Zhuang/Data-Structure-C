@@ -1,3 +1,9 @@
+/* 
+* Date: 2020.05.05;
+* Intro: 17個人的關係圖, 人名最長10個字元, 圖最多容納20人的資料;
+* func: 可透過BFS, DSF走訪圖以及找出兩人間的關係隔多少距離(非最短距離);
+*/
+// =============== HEADER_FILE ==================
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
@@ -21,6 +27,8 @@ typedef struct queueHead{
 }QUEUE;
 // ============= FUNCTION_ANNOUCEMENT ===============
 void FILE_GET(char *file, LIST *DB, int *DB_size);
+void GET_CHOSE(int *chose);
+void GET_START_END(char *start, char *end, int chose);
 
 void DB_INIT(LIST *DB, char *element, int site);
 void DB_INSERT(LIST *DB, char *element, int site);
@@ -36,9 +44,6 @@ char* DE_QUEUE(QUEUE *head);
 void EN_QUEUE(QUEUE *head, char *element);
 char* POP(NODE *head);
 void PUSH(NODE *head, char *element);
-
-void GET_CHOSE(int *chose);
-void GET_START_END(char *start, char *end, int chose);
 // ============= MAIN ===============
 int main(void){
     char file[] = "graph.cpp", start[MAX]="John", end[MAX]="Mary";
@@ -51,7 +56,7 @@ int main(void){
         GET_CHOSE(&chose);
         GET_START_END(start, end, chose);
         switch(chose){
-            case 0: goto end; break;
+            case 0: break;
             case 1: DB_PRINT(DB, DB_size); break;
             case 2: DB_BSF(DB, start, DB_size); break;
             case 3: DB_DSF(DB, start, DB_size); break;
@@ -61,19 +66,21 @@ int main(void){
         }
         DB_RECORD_CLEAR(DB, DB_size);
     }
-    end:
     printf("\t[ 程式結束 ]\n");
     return 0;
 }
 // ================ FUNCTION ===============
 void DB_DSF_FIND_PATH(LIST *DB, char *start, char *end, int DB_size){
-    if( ! DB_FIND(DB, start, DB_size) ) {printf("\t[ 沒有該起點! ]\n"); return;}
-    NODE *stack = (NODE*)malloc(sizeof(NODE)); // stack
-    stack->next = NULL;
+    if( ! DB_FIND(DB, start, DB_size) ) 
+        { printf("\t[ 沒有該起點! ]\n"); return; }
+    printf("FIND \"%s\" -> \"%s\":\n\t", start, end);
     int flag=0, count=0; // flag:紀錄該路是否已到終點; 
     LIST *tmp=NULL;
-    printf("FIND \"%s\" -> \"%s\":\n\t", start, end);
+    NODE *stack = (NODE*)malloc(sizeof(NODE)); // stack
+    stack->next = NULL;
+
     PUSH(stack, start);
+    DB_FIND(DB,stack->next->name,DB_size)->status = 1; // 將stack.top 改為 造訪中狀態
     while(stack->next){ // stack is empty or not?
         if( ! strcmp(stack->next->name, end) ){ //找到 end 
             while(stack->next){ // print result
@@ -84,15 +91,18 @@ void DB_DSF_FIND_PATH(LIST *DB, char *start, char *end, int DB_size){
                     count+=1;
                 }
             }
-            if( strcmp(start,end) ) printf("|START\nCount: %d\n", count-1);
-            else printf("Count: %d\n", count);
+            //if( strcmp(start,end) ) 
+                printf("|START\nCount: %d\n", count-1);
+            //else 
+                //printf("Count: %d\n", count);
             return;
         }
         else{ // 未找到 end
             flag = 0;
-            tmp = DB_FIND(DB, stack->next->name, DB_size);
-            tmp->status = 1;
-            NODE *nodePtr = tmp->next;
+            //tmp = DB_FIND(DB, stack->next->name, DB_size);
+            //tmp->status = 1;
+            //NODE *nodePtr = tmp->next;
+            NODE *nodePtr = DB_FIND(DB, stack->next->name, DB_size)->next;
             while(nodePtr){
                 //周遭是否還有未拜訪的點
                 if( DB_FIND(DB, nodePtr->name, DB_size)->status == 0 ){
@@ -102,7 +112,9 @@ void DB_DSF_FIND_PATH(LIST *DB, char *start, char *end, int DB_size){
                 nodePtr = nodePtr->next;
             }
             if(!flag){ //該路已到終點, 回到分支點
-                while(stack->next && DB_FIND(DB,stack->next->name,DB_size)->status ) DB_FIND(DB, POP(stack), DB_size)->status=0;
+                while(DB_FIND(DB,stack->next->name,DB_size)->status &&\
+                    stack->next)
+                    DB_FIND(DB, POP(stack), DB_size)->status=0;
                 // 如果走完
                 if(! stack->next) break;      
             }
@@ -112,7 +124,8 @@ void DB_DSF_FIND_PATH(LIST *DB, char *start, char *end, int DB_size){
     printf("\t[ 未找到 ]\n"); 
 }
 void DB_BSF_SECOND(LIST *DB, char *start, int DB_size){
-    if( ! DB_FIND(DB, start, DB_size) ) {printf("\t[ 沒有該起點! ]\n"); return;}
+    if( ! DB_FIND(DB, start, DB_size) )
+        { printf("\t[ 沒有該起點! ]\n"); return; }
     NODE *S = (NODE*)malloc(sizeof(NODE));
     S->next = NULL;
     LIST *site = DB_FIND(DB, start, DB_size);
@@ -144,53 +157,53 @@ void DB_BSF_SECOND(LIST *DB, char *start, int DB_size){
     printf("|END\n");     
 }
 void DB_BSF(LIST *DB, char *start, int DB_size){
-    if( ! DB_FIND(DB, start, DB_size) ) {printf("\t[ 沒有該起點! ]\n"); return;}
+    if( ! DB_FIND(DB, start, DB_size) )
+        { printf("\t[ 沒有該起點! ]\n"); return; }
     QUEUE *Q = (QUEUE*)malloc(sizeof(QUEUE));
     Q->next = NULL; Q->rear = NULL;
     LIST *site = DB_FIND(DB, start, DB_size);
     site->status = 1;
-    printf("BFS start [%s]:\n\t", site->name);
+    printf("BFS start: [%s]-", site->name);
     NODE *tmp = site->next;
-    while(tmp){
-        EN_QUEUE(Q, tmp->name);
-        tmp = tmp->next;
-    }
+    int cnt = 1;
+    while(tmp)
+        { EN_QUEUE(Q, tmp->name); tmp = tmp->next; }
     while(Q->next){
         site = DB_FIND(DB, DE_QUEUE(Q), DB_size);
         if( ! site->status){
+            cnt += 1;
+            if( ! (cnt%9)) printf("\n\t");
             site->status = 1;
             printf("[%s]-", site->name);
             tmp = site->next;
-            while(tmp){
-                EN_QUEUE(Q, tmp->name);
-                tmp = tmp->next;
-            }          
+            while(tmp)
+                { EN_QUEUE(Q, tmp->name); tmp = tmp->next; }          
         }
     }
     printf("|END\n");
 }
 void DB_DSF(LIST *DB, char *start, int DB_size){
-    if( ! DB_FIND(DB, start, DB_size) ) {printf("\t[ 沒有該起點! ]\n"); return;}
+    if( ! DB_FIND(DB, start, DB_size) ) 
+        { printf("\t[ 沒有該起點! ]\n"); return; } 
     NODE *S = (NODE*)malloc(sizeof(NODE));
     S->next = NULL;
     LIST *site = DB_FIND(DB, start, DB_size);
     site->status = 1;
-    printf("DFS start [%s]:\n\t", site->name);
+    printf("DFS start: [%s]-", site->name);
     NODE *tmp = site->next;
-    while(tmp){
-        PUSH(S, tmp->name);
-        tmp = tmp->next;
-    }
+    int cnt = 1;
+    while(tmp)
+        { PUSH(S, tmp->name); tmp = tmp->next; }
     while(S->next){
         site = DB_FIND(DB, POP(S), DB_size);
         if( ! site->status){
+            cnt += 1;
+            if( ! (cnt%9)) printf("\n\t");
             site->status = 1;
             printf("[%s]-", site->name);
             tmp = site->next;
-            while(tmp){
-                PUSH(S, tmp->name);
-                tmp = tmp->next;
-            }          
+            while(tmp)
+                { PUSH(S, tmp->name); tmp = tmp->next; }          
         }
     }
     printf("|END\n");    
@@ -218,7 +231,8 @@ void PUSH(NODE *head, char *element){
 }
 void EN_QUEUE(QUEUE *head, char *element){
     NODE *newnode = (NODE*)malloc(sizeof(NODE));
-    if( !newnode ) {printf("\t[ QUEUE is full ]"); return; } 
+    if( !newnode ) 
+        { printf("\t[ QUEUE is full ]"); return; } 
     strcpy(newnode->name, element);
     newnode->next = NULL;
     if(head->next)
@@ -231,7 +245,8 @@ char* DE_QUEUE(QUEUE *head){
     char *ret = (char*)malloc(sizeof(char)*MAX);
     memset(ret,'\0',MAX);
     NODE *tmp=NULL;
-    if( !head->next ) { printf("\t[ QUEUE is empty ]\n"); return ret; }
+    if( !head->next ) 
+        { printf("\t[ QUEUE is empty ]\n"); return ret; }
     strcpy(ret, head->next->name);
     tmp = head->next;
     head->next = head->next->next;
@@ -244,16 +259,19 @@ void FILE_GET(char *file, LIST *DB, int *DB_size){
     char copy[MAX*20]={'\0'};
     if(fptr){
         while( fgets(ori,MAX*20,fptr) ){
-            if( isspace(ori[0]) ) continue;
+            if( isspace(ori[0]) ) 
+                continue;
             strcpy(copy,ori);
             char *take = strtok(copy," \n");
             DB_INIT(DB, take, DB_size[0]);
             take = strtok(NULL, " ");
-            while(take){ DB_INSERT(DB, take, DB_size[0]); take = strtok(NULL," \n"); }
+            while(take)
+                { DB_INSERT(DB, take, DB_size[0]); take = strtok(NULL," \n"); }
             DB_size[0]+=1;
         }
     }
-    else printf("can't open the file\n");
+    else 
+        printf("can't open the file\n");
     fclose(fptr);
 }
 void DB_INIT(LIST *DB, char *element, int site){
@@ -265,24 +283,23 @@ void DB_INSERT(LIST *DB, char *element, int site){
     NODE *newnode = (NODE*)malloc(sizeof(NODE));
     strcpy(newnode->name, element);
     newnode->next = NULL;
-    if( ! DB[site].next) { DB[site].next = newnode; return; }
+    if( ! DB[site].next) 
+        { DB[site].next = newnode; return; }
     NODE *tmp = DB[site].next;
-    while(tmp->next) tmp = tmp->next;
+    while(tmp->next) 
+        tmp = tmp->next;
     tmp->next = newnode; 
 }
 void DB_PRINT(LIST *DB, int DB_size){
     NODE *tmp = NULL;
-    for(int i=0;i<DB_size;i++){
+    for(int i=0;i<DB_size;i++)
         if(DB[i].next){
             tmp = DB[i].next;
             printf("%3d. %s:\t",i+1, DB[i].name);
-            while(tmp){
-                printf("[%s]-", tmp->name);
-                tmp = tmp->next;
-            }
+            while(tmp)
+                { printf("[%s]-", tmp->name); tmp = tmp->next; }
             printf("|END\n");
         }
-    }
 }
 void DB_RECORD_CLEAR(LIST *DB, int DB_size){
     for(int i=0;i<DB_size;i++)
@@ -290,7 +307,7 @@ void DB_RECORD_CLEAR(LIST *DB, int DB_size){
 }
 void GET_CHOSE(int *chose){
     char tmp[MAX]={'\0'}; //for input chose;
-    char hint[]="\n\t@主選單@\n(1)顯示圖\n(2)BFS\n(3)DSF\n(4)找距該點2層的所有點\n(5)找2點的一個路徑與距離(非最短)\n(0)結束\n輸入選擇: ";
+    char hint[]="\n\t@主選單@\n (1) 顯示圖\n (2) BFS\n (3) DSF\n (4) 找距該點2層的所有點\n (5) 找2點的一個路徑與距離(非最短)\n (0) 結束\n輸入選擇: ";
     while(1){
         printf("%s", hint);
         scanf("%s", tmp); getchar();
