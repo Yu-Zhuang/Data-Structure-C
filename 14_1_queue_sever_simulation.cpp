@@ -28,8 +28,8 @@ typedef struct qh{
 void DRIVER(int run, int*newMessageNum, int*processorRate, float susccessRate);
 
 void NEW_MESSAGE(Q_HEAD *q_head, int *newMessageNum, int id);
-void PROCESSOR(Q_HEAD *q, int *totalQueue, int *totalArrived, int *firstTimes,\
-				int *secondTimes, int *totalMessageSent, int *n);
+void PROCESSOR(Q_HEAD *q, int *processorRate, int *totalQueue,int *totalArrived,\
+				int *firstTimes,int *secondTimes, int *totalMessageSent, int *n);
 void SEVER_FREE(Q_HEAD *q, int n);
 
 void STATICS(int totalArrived, int totalMessageSent, int totalRunTime,\
@@ -65,7 +65,7 @@ void DRIVER(int run, int*newMessageNum, int*processorRate, float susccessRate){
 	for(int i=0; i<run OR q_head->next ; i++){
 		if(i<run)
 			NEW_MESSAGE(q_head, newMessageNum, i+1);
-		PROCESSOR(q_head, &totalQueue, &totalArrived, &firstTimes,\
+		PROCESSOR(q_head, processorRate, &totalQueue, &totalArrived, &firstTimes,\
 					&secondTimes, &totalMessageSent, &n);
 		SEVER_FREE(q_head, n);
 		totalRunTime += 1;
@@ -75,12 +75,12 @@ void DRIVER(int run, int*newMessageNum, int*processorRate, float susccessRate){
 			totalQueue, firstTimes, secondTimes);
 }
 
-void PROCESSOR(Q_HEAD *q, int *totalQueue, int *totalArrived, int *firstTimes,\
-				int *secondTimes, int *totalMessageSent, int *n){
+void PROCESSOR(Q_HEAD *q, int *processorRate, int *totalQueue,int *totalArrived,\
+				int *firstTimes,int *secondTimes, int *totalMessageSent, int *n){
 	// qTotalCount += queueCount
 	totalQueue[0] += q->count;
 	// n = rand(20,60) // 產生處理信件數
-	n[0] = rand()%41 + 20;
+	n[0] = rand()%(processorRate[1]-processorRate[0]+1) + processorRate[0];
 	// if(n > queueCount) : n = queueCount
 	if(n[0] > q->count)
 		n[0] = q->count;
@@ -125,7 +125,7 @@ void SEVER_FREE(Q_HEAD *q, int n){
 }
 void NEW_MESSAGE(Q_HEAD *q_head, int *newMessageNum, int id){
 	// n = rand(0,60)
-	int n = rand()%60;
+	int n = rand()%(newMessageNum[1]-newMessageNum[0]+1) + newMessageNum[0];
 	// create n*newMessage
 	for(int i=0;i<n;i++){
 		MESSAGES *newMessage = (MESSAGES*)malloc(sizeof(MESSAGES));
@@ -162,6 +162,7 @@ void STATICS(int totalArrived, int totalMessageSent, int totalRunTime,\
 	// average number of attempts to send a message successfully: 
 											// totalMessageSent/totalArrived
 	printf(" \tAverage number of attempts to send a message successfully: %.2lf\n", (double)totalMessageSent/totalArrived);
+	printf(" \tTotal run: %d\n", totalRunTime);
 }
 
 void EN_QUEUE(Q_HEAD *q, MESSAGES element){
