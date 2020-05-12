@@ -55,7 +55,7 @@ int main(void){
 		CONDITION_SET( &run, newMessageNum, processorRate, &failedRate);
 		DRIVER(run, newMessageNum, processorRate, failedRate);	
 		CONDITION_PRINT( run, newMessageNum, processorRate, failedRate);	
-		printf("繼續按1, 結束按0: "); scanf("%d", &chose); fflush(stdin);
+		printf("\n繼續按1, 結束按0: "); scanf("%d", &chose); fflush(stdin);
 	}
 	printf("\t [ 程式結束 ]\n");
 	return 0;
@@ -125,7 +125,7 @@ void PROCESSOR(Q_HEAD *q, int *processorRate, int *totalQueue,int *totalArrived,
 	printf("# PROCESSOR()->  (Current Queue size: %d )\n\t[n]======[ ID ]==============[ status | susTimes ]\n", q->count);
 	for(int i=0; i<n[0] AND qTmp ; i++){
 		// suscessful rate 
-		qTmp->val->status = ( (rand()%10)>(failedRate*10-1) ) ? 1 : 0;
+		qTmp->val->status = ( (rand()%1000)>(failedRate*1000-1) ) ? 1 : 0;
 		qTmp->val->susTimes += 1;
 		// print the ID of the run
 		printf("\t%d.\t %s \t %d\t %d\n", i+1, qTmp->val->id, qTmp->val->status, qTmp->val->susTimes);
@@ -225,7 +225,7 @@ void CONDITION_SET(int* run, int*newMessageNum, int*processorRate, float *failed
 	printf("Iteration times: "); scanf("%d", run);
 	printf("Range of newMessageNum(start end): "); scanf("%d %d", &newMessageNum[0], &newMessageNum[1]);
 	printf("Range of processorRate(start end: "); scanf("%d %d", &processorRate[0], &processorRate[1]);
-	printf("Failed Rate(0~1.0): "); scanf("%f", failedRate);
+	printf("Failed Rate(0~1.00): "); scanf("%f", failedRate);
 }
 void CONDITION_PRINT(int run, int *newMessageNum, int *processorRate, float failedRate){
 	printf("\t---\n\tPS. Condition of this test:\n");
