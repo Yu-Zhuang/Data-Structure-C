@@ -27,10 +27,12 @@ typedef struct qh{
 }Q_HEAD;
 
 // ===== FUNCTION_ANNOUNCEMENT =====
-void CONDITION_SET(int* run, int *newMessageNum, int *processorRate, float *failedRate);
-void CONDITION_PRINT(int run, int *newMessageNum, int *processorRate, float failedRate);
+void CONDITION_SET(int* run, int *newMessageNum, int *processorRate,\
+					float *failedRate, int *severNum);
+void CONDITION_PRINT(int run, int *newMessageNum, int *processorRate,\
+					float failedRate, int severNum);
 
-void DRIVER(int run, int*newMessageNum, int*processorRate, float failedRate);
+void DRIVER(int run, int*newMessageNum, int*processorRate, float failedRate, int severNum);
 void NEW_MESSAGE(Q_HEAD *q_head, int *newMessageNum);
 void PROCESSOR(Q_HEAD *q, int *processorRate, int *totalQueue,int *totalArrived,\
 				int *firstTimes,int *secondTimes, int *totalMessageSent, int *n,\
@@ -48,13 +50,14 @@ int main(void){
 	int chose = 1,\
 		run = 100,\
 		newMessageNum[2] = {0,60},\
-		processorRate[2] = {20,60};
+		processorRate[2] = {20,60},\
+		severNum = 1;
 	float failedRate = 0.3;
 
 	while(chose){
-		CONDITION_SET( &run, newMessageNum, processorRate, &failedRate);
-		DRIVER(run, newMessageNum, processorRate, failedRate);	
-		CONDITION_PRINT( run, newMessageNum, processorRate, failedRate);	
+		CONDITION_SET( &run, newMessageNum, processorRate, &failedRate, &severNum);
+		DRIVER(run, newMessageNum, processorRate, failedRate, severNum);	
+		CONDITION_PRINT( run, newMessageNum, processorRate, failedRate, severNum);	
 		printf("\n繼續按1, 結束按0: "); scanf("%d", &chose); fflush(stdin);
 	}
 	printf("\t [ 程式結束 ]\n");
@@ -62,7 +65,7 @@ int main(void){
 }
 
 // ===== FUNCTION =====
-void DRIVER(int run, int*newMessageNum, int*processorRate, float failedRate){
+void DRIVER(int run, int*newMessageNum, int*processorRate, float failedRate, int severNum){
 	int totalArrived = 0,\
 		totalMessageSent = 0,\
 		totalRunTime = 0,\
@@ -79,9 +82,11 @@ void DRIVER(int run, int*newMessageNum, int*processorRate, float failedRate){
 		printf("\n\t  ---------- | Iteration %d | ----------\n", i+1);
 		if(i<run)
 			NEW_MESSAGE(q_head, newMessageNum);
-		PROCESSOR(q_head, processorRate, &totalQueue, &totalArrived, &firstTimes,\
+		for(int i=0;i<severNum;i++){
+			PROCESSOR(q_head, processorRate, &totalQueue, &totalArrived, &firstTimes,\
 					&secondTimes, &totalMessageSent, &n, failedRate, &qMAX);
-		SEVER_FREE(q_head, n);
+			SEVER_FREE(q_head, n);
+		}
 		totalRunTime += 1;
 	}
 	// printStatics
@@ -210,7 +215,7 @@ MESSAGES* DE_QUEUE(Q_HEAD *q){
 	return ret;
 }
 
-void CONDITION_SET(int* run, int*newMessageNum, int*processorRate, float *failedRate){
+void CONDITION_SET(int* run, int*newMessageNum, int*processorRate, float *failedRate, int *severNum){
 	char chose='1';
 	printf("\n\t@郵件寄送系統模擬@\n");
 	printf("是否要使用預設值(1:是, 任意鍵:否): "); scanf("%c", &chose); fflush(stdin);
@@ -219,6 +224,7 @@ void CONDITION_SET(int* run, int*newMessageNum, int*processorRate, float *failed
 		newMessageNum[0] = 0; newMessageNum[1] = 60;
 		processorRate[0] = 20; processorRate[1] = 60;
 		failedRate[0] = 0.3;
+		severNum[0] = 1;
 		return;
 	}
 	printf("\t#請依序輸入模擬條件#\n");
@@ -226,11 +232,13 @@ void CONDITION_SET(int* run, int*newMessageNum, int*processorRate, float *failed
 	printf("Range of newMessageNum(start end): "); scanf("%d %d", &newMessageNum[0], &newMessageNum[1]);
 	printf("Range of processorRate(start end: "); scanf("%d %d", &processorRate[0], &processorRate[1]);
 	printf("Failed Rate(0~1.00): "); scanf("%f", failedRate);
+	printf("Sever Number: "); scanf("%d", severNum);
 }
-void CONDITION_PRINT(int run, int *newMessageNum, int *processorRate, float failedRate){
+void CONDITION_PRINT(int run, int *newMessageNum, int *processorRate, float failedRate, int severNum){
 	printf("\t---\n\tPS. Condition of this test:\n");
 	printf("\t \trun set: %d\n", run);
 	printf("\t \tnewMessageNum: %d ~ %d\n", newMessageNum[0], newMessageNum[1]);
 	printf("\t \tprocessorRate: %d ~ %d\n", processorRate[0], processorRate[1]);
-	printf("\t \tfailedRate: %d %%\n\n", (int)(failedRate*100));
+	printf("\t \tfailedRate: %d %%\n", (int)(failedRate*100));
+	printf("\t \tseverNum: %d\n\n", severNum);
 }
