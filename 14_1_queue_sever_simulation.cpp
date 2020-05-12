@@ -67,7 +67,6 @@ void DRIVER(int run, int*newMessageNum, int*processorRate, float susccessRate){
 	for(int i=0; i<run OR q_head->next ; i++){
 		if(i<run)
 			NEW_MESSAGE(q_head, newMessageNum);
-		//printf("<%d>\n", q_head->count);
 		PROCESSOR(q_head, processorRate, &totalQueue, &totalArrived, &firstTimes,\
 					&secondTimes, &totalMessageSent, &n);
 		SEVER_FREE(q_head, n);
@@ -91,8 +90,9 @@ void PROCESSOR(Q_HEAD *q, int *processorRate, int *totalQueue,int *totalArrived,
 	NODE *qTmp = q->next;
 	printf("\n[n]======[ ID ]==============[status | susTimes]\n");
 	for(int i=0; i<n[0] AND qTmp ; i++){
-		// node.status = rand(0,1) // > 0.3 -> suscess, < 0.3 -> failed
+		// suscessful rate = 70%
 		qTmp->val->status = ( (rand()%10)>2 ) ? 1 : 0;
+		printf("hello world\n");
 		qTmp->val->susTimes += 1;
 		// print the ID of the run
 		printf("%d.\t %s \t %d\t %d\n", i+1, qTmp->val->id, qTmp->val->status, qTmp->val->susTimes);
@@ -109,7 +109,6 @@ void PROCESSOR(Q_HEAD *q, int *processorRate, int *totalQueue,int *totalArrived,
 		}
 		totalMessageSent[0] += 1;
 		qTmp = qTmp->next;
-		//if((i+1)%20 IS 0) printf("\n\t");
 	}
 }
 
