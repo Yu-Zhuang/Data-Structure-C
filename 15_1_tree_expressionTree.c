@@ -64,28 +64,38 @@ NODE* EXPRESSION_TREE_CREATE(char *prefix){
 	return ret;
 }
 
-void EXPRESSION_TREE_PRINT(NODE *root){
+void EXPRESSION_TREE_PRINT(NODE *root, char pre, NODE *preNode){
 	if(root){
 		// if element is operand
 		if( ((root->val>='A')AND(root->val<='Z')) OR ((root->val>='a')AND(root->val<='z')) )
 			printf("%c ", root->val);
 		else{
-			printf("( ");
-			EXPRESSION_TREE_PRINT(root->left);
+			if( (pre IS '/' AND root->val IS '+') OR (pre IS '/' AND root->val IS '+')\
+				OR (pre IS '*' AND root->val IS '+') OR (pre IS '*' AND root->val IS '-')\
+				OR (pre IS '/' AND root->val IS '/' AND preNode->right IS root)\
+				OR (pre IS '/' AND root->val IS '*' AND preNode->right IS root) ){
+				printf("( ");
+			}
+			EXPRESSION_TREE_PRINT(root->left, root->val, root);
 			printf("%c ", root->val);
-			EXPRESSION_TREE_PRINT(root->right);
-			printf(") ");
+			EXPRESSION_TREE_PRINT(root->right, root->val, root);
+			if( (pre IS '/' AND root->val IS '+') OR (pre IS '/' AND root->val IS '+')\
+				OR (pre IS '*' AND root->val IS '+') OR (pre IS '*' AND root->val IS '-')\
+				OR (pre IS '/' AND root->val IS '/' AND preNode->right IS root)\
+				OR (pre IS '/' AND root->val IS '*' AND preNode->right IS root) ){
+				printf(") ");
+			}
 		}
 	}
 }
 
 int main(void){
 	// read a prefix expression
-	char prefix[MAX] = "/a+/*bc-/defg";
+	char prefix[MAX] = "/a*bc";
 	// create expression tree
 	NODE *root = EXPRESSION_TREE_CREATE(prefix);
 	// print tree
-	EXPRESSION_TREE_PRINT(root);
+	EXPRESSION_TREE_PRINT(root, '\0', NULL);
 	// end
 	printf("\n");
 	return 0;
