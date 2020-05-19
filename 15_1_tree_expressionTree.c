@@ -64,34 +64,44 @@ NODE* EXPRESSION_TREE_CREATE(char *prefix){
 	return ret;
 }
 
+bool PARENTHESES_CHECK_NEED(char pre, NODE *current, NODE *preNode){
+	if( (pre IS '/' AND current->val IS '+') OR (pre IS '/' AND current->val IS '+')\
+		OR (pre IS '*' AND current->val IS '+') OR (pre IS '*' AND current->val IS '-')\
+		OR (pre IS '/' AND current->val IS '/' AND preNode->right IS current)\
+		OR (pre IS '/' AND current->val IS '*' AND preNode->right IS current)\
+		OR (pre IS '-' AND current->val IS '-' AND preNode->right IS current)\
+		OR (pre IS '-' AND current->val IS '+' AND preNode->right IS current) )
+		return true;
+	return false;
+}
+
 void EXPRESSION_TREE_PRINT(NODE *root, char pre, NODE *preNode){
 	if(root){
 		// if element is operand
 		if( ((root->val>='A')AND(root->val<='Z')) OR ((root->val>='a')AND(root->val<='z')) )
 			printf("%c ", root->val);
 		else{
-			if( (pre IS '/' AND root->val IS '+') OR (pre IS '/' AND root->val IS '+')\
-				OR (pre IS '*' AND root->val IS '+') OR (pre IS '*' AND root->val IS '-')\
-				OR (pre IS '/' AND root->val IS '/' AND preNode->right IS root)\
-				OR (pre IS '/' AND root->val IS '*' AND preNode->right IS root) ){
+			if( PARENTHESES_CHECK_NEED(pre, root, preNode) )
 				printf("( ");
-			}
 			EXPRESSION_TREE_PRINT(root->left, root->val, root);
 			printf("%c ", root->val);
 			EXPRESSION_TREE_PRINT(root->right, root->val, root);
-			if( (pre IS '/' AND root->val IS '+') OR (pre IS '/' AND root->val IS '+')\
-				OR (pre IS '*' AND root->val IS '+') OR (pre IS '*' AND root->val IS '-')\
-				OR (pre IS '/' AND root->val IS '/' AND preNode->right IS root)\
-				OR (pre IS '/' AND root->val IS '*' AND preNode->right IS root) ){
+			if( PARENTHESES_CHECK_NEED(pre, root, preNode) )
 				printf(") ");
-			}
 		}
 	}
 }
 
+void GET_EXPRESSION(char *take){
+	FILE *fptr = fopen("./1.cpp","r");
+	fgets(take, MAX, fptr);
+	fclose(fptr);
+}
+
 int main(void){
 	// read a prefix expression
-	char prefix[MAX] = "/a*bc";
+	char prefix[MAX] = "+-abc";
+	GET_EXPRESSION(prefix);
 	// create expression tree
 	NODE *root = EXPRESSION_TREE_CREATE(prefix);
 	// print tree
