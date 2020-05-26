@@ -2,59 +2,7 @@
 # include <stdlib.h>
 # include <string.h>
 # include <time.h>
-
-# define AND &&
-# define OR ||
-# define IS ==
-# define IS_NOT !=
-
-typedef struct t{
-	int val;
-	struct t *left, *right;	
-}BST_NODE;
-typedef struct mt{
-	int val[3]; // 0: how many value; 1,2: val;
-	struct mt *left, *mid, *right;
-}M_TREE_NODE;
-
-void FILE_CREATE(char *file, int N){
-	FILE *fptr = fopen(file, "w");
-	if(fptr){
-		int cnt[2] = {1,-1};
-		for(int i=0;i<N;i++)
-			fprintf(fptr,"%d\n", rand()%10001*cnt[rand()%2]);
-	}
-	else
-		printf("\t[ warning : can't open the file ]\n");
-	fclose(fptr);
-}
-
-BST_NODE* BST_NODE_CREATE(int element){
-	BST_NODE *ret = (BST_NODE*)malloc(sizeof(BST_NODE));
-	ret->val = element; ret->left = NULL; ret->right = NULL;
-	return ret;
-}
-
-M_TREE_NODE* M_TREE_NODE_CREATE(int element){
-	M_TREE_NODE *ret = (M_TREE_NODE*)malloc(sizeof(M_TREE_NODE));
-	ret->val[0] = 1;
-	ret->val[1] = element;
-	ret->left = NULL; ret->mid = NULL; ret->right = NULL;
-	return ret;
-}
-
-void* HEAD_CREATE(int chose, int N){
-	switch(chose){
-		// (1) create array
-		case 1: { int *ret = (int*)malloc(sizeof(int)*N); return ret; }
-		// (2) create BST
-		case 2: { BST_NODE *ret = BST_NODE_CREATE(0); return ret; }
-		// (3) create m-tree
-		case 3: { M_TREE_NODE *ret = M_TREE_NODE_CREATE(0); ret->val[0]=0; return ret; }
-		default: printf("\t[ warning : wrong input ]\n"); break;
-	}
-	return NULL;
-}
+# include "subFunc.h"
 
 void ARRAY_CREATE(void *nums, int N, int element){
 	int *array = (int*)nums;
@@ -80,13 +28,6 @@ void ARRAY_CREATE(void *nums, int N, int element){
 	printf("\n=============== \tcp:%d\tmv:%d\t=====================\n\n", cp, mv);
 }
 
-void BST_IN_ORDER(BST_NODE *root){
-	if(root){
-		BST_IN_ORDER(root->left);
-		printf("%d,", root->val);
-		BST_IN_ORDER(root->right);
-	}
-}
 void BST_CREATE(void *root, int N, int element){
 	BST_NODE *tree = (BST_NODE*)root;
 	static int cp = 0, mv = 0;
@@ -119,14 +60,6 @@ void BST_CREATE(void *root, int N, int element){
 	printf("\n=============== \tcp:%d\tmv:%d\t=====================\n\n", cp, mv);
 }
 
-void SWAP(int *num1, int *num2){
-	num1[0] = num2[0] + (num2[0] = num1[0]) - num1[0];
-}
-void M_TREE_NODE_PRINT(M_TREE_NODE *tree){
-	for(int i=0;i<tree->val[0];i++)
-		printf(" | %5d", tree->val[i+1]);
-	printf(" |\n");
-}
 void M_TREE_CREATE(void *root, int N, int element){
 	printf("\n=====\tM_TREE_CREATE: %d| target: %d\t=====\n", N, element);
 	M_TREE_NODE *tree = (M_TREE_NODE*)root;
@@ -193,7 +126,6 @@ void INSERT(void *ret, int chose, int N, int element){
 		default: printf("\t[ warning : 404 ]\n"); break;
 	}
 }
-
 void* FILE_GET(char *file, int N, int chose){
 	FILE *fptr = fopen(file, "r");
 	void *ret = HEAD_CREATE(chose, N);
@@ -244,6 +176,75 @@ bool BST_BI_SEARCH(void *root, int target){
 	return ret;
 }
 
+M_TREE_NODE* M_TREE_MAX(M_TREE_NODE *node){
+	M_TREE_NODE *ret = node;
+	while(ret->right IS_NOT NULL)
+		if(ret->right)
+			ret = ret->right;
+	return ret;
+}
+M_TREE_NODE* M_TREE_MIN(M_TREE_NODE *node){
+	M_TREE_NODE *ret = node;
+	while(ret->left IS_NOT NULL)
+		if(ret->left)
+			ret = ret->left;
+	return ret;
+}
+void M_TREE_DELETE(M_TREE_NODE *node, int target){
+	printf("Before delete: "); M_TREE_NODE_PRINT(node);
+	// if node is not leaf
+	if(node->left IS_NOT NULL){
+		M_TREE_NODE *maxNode = M_TREE_MAX(node->left);
+		for(int i=0;i<node->val[0];i++)
+			if(node->val[i+1] IS target)
+				node->val[i+1] = maxNode->val[maxNode->val[0]];
+		if(node->val[1] > node->val[2]) 
+			SWAP(&node->val[1], &node->val[2]);
+		M_TREE_DELETE(maxNode, maxNode->val[maxNode->val[0]]);
+	}	
+	else if(node->right IS_NOT NULL){
+		M_TREE_NODE *minNode = M_TREE_MIN(node->right);
+		for(int i=0;i<node->val[0];i++)
+			if(node->val[i+1] IS target)
+				node->val[i+1] = minNode->val[1];
+		if(node->val[1] > node->val[2]) 
+			SWAP(&node->val[1], &node->val[2]);
+		M_TREE_DELETE(minNode, minNode->val[1]);
+	}
+	else if(node->mid IS_NOT NULL){
+		M_TREE_NODE *mxnNode;
+		if(node->val[1] IS target){ // target is small one
+			mxnNode = M_TREE_MIN(node->mid);
+			for(int i=0;i<node->val[0];i++)
+				if(node->val[i+1] IS target)
+					node->val[i+1] = mxnNode->val[mxnNode->val[0]];
+		}
+		else{
+			mxnNode = M_TREE_MAX(node->mid);
+			for(int i=0;i<node->val[0];i++)
+				if(node->val[i+1] IS target)
+					node->val[i+1] = mxnNode->val[1];			
+		}
+		if(node->val[1] > node->val[2]) 
+			SWAP(&node->val[1], &node->val[2]);
+		M_TREE_DELETE(mxnNode, mxnNode->val[1]);
+	}
+	// if node is leaf
+	else{
+		if(node->val[0] IS 1){
+			M_TREE_NODE *tmp = node;
+			TO_NULL(&node);
+			free(tmp);
+		}
+		else{
+			node->val[0] -= 1;
+			if(node->val[1] IS target)
+				node->val[1] = node->val[2];
+		}
+	}
+	printf("After delete: "); M_TREE_NODE_PRINT(node);
+}
+
 bool M_TREE_SEARCH(void *root, int target){
 	M_TREE_NODE *tree = (M_TREE_NODE*)root;
 	static int cp = 0;
@@ -252,7 +253,7 @@ bool M_TREE_SEARCH(void *root, int target){
 		cp ++;
 		for(int i=0;i<tree->val[0];i++)
 			if(tree->val[i+1] IS target)
-				{ ret = 1; break; }
+				{ ret = 1; M_TREE_DELETE(tree, target); break; }
 		if(tree->val[1] > target)
 			tree = tree->left;
 		else if(tree->val[1] <= target AND tree->val[2] > target)
@@ -274,7 +275,7 @@ int main(void){
 	//FILE_CREATE(file, intergerNum);
 	data = FILE_GET(file, intergerNum, chose);
 
-	if(M_TREE_SEARCH(data, 3340))
+	if(M_TREE_SEARCH(data, -473))
 		printf("find\n");
 	else
 		printf("not found\n");
