@@ -2,12 +2,29 @@
 # include <stdlib.h>
 # include <time.h>
 
+void GET_CHOSE(int *chose){
+    printf("\n\t@ Sorting @\n(1) Quick sort (rand 1 pivot)\n(2) Quick sort (check 5 item to get pivot)\n(3) Merge sort\n(4) Bubble sort\nEnter chose: ");
+    scanf("%d", chose);
+}
+
+void RESULT_PRINT(int *arrayA, int arraySize, int cTimes, int max, int min, int chose){
+    ARRAY_PRINT(arrayA, arraySize);
+    printf("\n\t# Condition:\n\t\t* array size: %d\n\t\t* number range: %d ~ %d\n\t\t* sorting method: ", arraySize, min, max);
+    switch(chose){
+        case 1: printf("Quick sort (rand 1 pivot)\n"); break;
+        case 2: printf("Quick sort (check 5 item to get pivot)\n"); break;
+        case 3: printf("Merge sort\n"); break;
+        case 4: printf("Bubble sort\n"); break;
+        default: break;
+    }
+    printf("\n\t# Result: \n\t\t* Comparison times: %d\n", cTimes);
+}
+
 void SWAP(int *num_1, int *num_2){
     num_1[0] = num_2[0] + (num_2[0] = num_1[0]) - num_1[0];
 }
 
 int* ARRAY_GENERATOR(int max, int min, int numsSize){
-    srand(time(NULL));
     int *ret = (int*)malloc(sizeof(int)*numsSize);
     for(int i=0; i<numsSize; i++)
         ret[i] = rand()%(max-min+1)+min;
@@ -15,7 +32,7 @@ int* ARRAY_GENERATOR(int max, int min, int numsSize){
 }
 
 void ARRAY_PRINT(int *nums, int numsSize){
-    printf("\n\t========= ARRAY_PRINT ===========\n");
+    printf("\n\t\t========= SORTED_ARRAY_PRINT ===========\n");
     for(int i=0;i<numsSize;i++){
         printf("%7d ", nums[i]);
         if((i+1)%10 == 0)
@@ -23,31 +40,34 @@ void ARRAY_PRINT(int *nums, int numsSize){
     }
 }
 
-void BUBBLE_SORT(int *nums, int left, int right){
-    for(int i=left;i<right-1;i++){
-        for(int j=i;j<right;j++){
+void BUBBLE_SORT(int *nums, int left, int right, int *cp){
+    bool flag = 1;
+    for(int i=left;i<right&&flag;i++){
+        flag = 0;
+        for(int j=i;j<right+1;j++){
+            if(cp != NULL)
+                cp[0] ++;
             if(nums[i] > nums[j])
-                nums[i] = nums[j] - (nums[i] = nums[j]) + nums[j];
+                { SWAP(&nums[i], &nums[j]); flag = 1; }
         }
     }
 }
 
 void PIVOT_SET(int *nums, int left, int right, int chose){
-    srand(time(NULL));
     int pivot = 0;
     if(chose == 1)
         pivot = rand()%(right-left+1)+left;
     else{
         if(right - left > 5)
-            BUBBLE_SORT(nums, (right+left)/2-2, (right+left)/2+2);
+            BUBBLE_SORT(nums, (right+left)/2-2, (right+left)/2+2, NULL);
         pivot = (right+left)/2;
     }
-    nums[left] = nums[pivot] - (nums[pivot] = nums[left]) + nums[left];
+    SWAP(&nums[left], &nums[pivot]);
 }
 
-void QUICK_SORT(int *nums, int left, int right, int *ct){
+void QUICK_SORT(int *nums, int left, int right, int *ct, int chose){
     if(left < right){
-        PIVOT_SET(nums, left, right, 0);  // set pivot to left
+        PIVOT_SET(nums, left, right, chose);  // set pivot to left
         int base=left, i=left, j=right+1;
         do{
             do {i++; ct[0]++;} while(nums[i]<nums[base] && i<=right); 
@@ -55,8 +75,8 @@ void QUICK_SORT(int *nums, int left, int right, int *ct){
             if(i<j) SWAP(&nums[i], &nums[j]);
         }while(i<j);
         SWAP(&nums[base], &nums[j]);
-        QUICK_SORT(nums, left, j-1, ct);
-        QUICK_SORT(nums, j+1, right, ct);
+        QUICK_SORT(nums, left, j-1, ct, chose);
+        QUICK_SORT(nums, j+1, right, ct, chose);
     }
 }
 
@@ -89,14 +109,28 @@ void MERGE_SORT(int *nums, int start, int end, int *ct){
     MERGE(nums, start, (start+end)/2, (start+end)/2+1, end, ct);
 }
 
-int main(void){    
-    int max = 32768, min = -32767, arraySize = 1000, cTimes = 0;
-    int *arrayA = ARRAY_GENERATOR(max, min, arraySize);
+int main(void){  
+    srand(time(NULL));  
+    int max = 32768, min = -32767, arraySize = 1000, cTimes = 0, chose = 1;
+    int *arrayA = ARRAY_GENERATOR(max, min, arraySize), *tmp;
 
-    QUICK_SORT(arrayA, 0, arraySize-1, &cTimes);
-
-    ARRAY_PRINT(arrayA, arraySize);
-    printf("\n\tComparison times: %d\n", cTimes);
+    while(chose != 0){
+        GET_CHOSE(&chose);
+        switch(chose){
+            case 0: printf("\n\t[ END ]\n"); break;
+            case 1: case 2: QUICK_SORT(arrayA, 0, arraySize-1, &cTimes, chose); break;
+            case 3: MERGE_SORT(arrayA, 0, arraySize-1, &cTimes); break;
+            case 4: BUBBLE_SORT(arrayA, 0, arraySize-1, &cTimes); break;
+            default: printf("\t[ warning : wrong input ]\n"); break;
+        }
+        if(chose>0 && chose<5){
+            RESULT_PRINT(arrayA, arraySize, cTimes, max, min, chose);
+            tmp = arrayA;
+            arrayA = ARRAY_GENERATOR(max, min, arraySize);
+            free(tmp);
+            cTimes = 0;
+        }
+    }
 
     free(arrayA);
     return 0;
