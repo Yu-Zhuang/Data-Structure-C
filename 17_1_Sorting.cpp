@@ -3,7 +3,7 @@
 # include <time.h>
 
 void GET_CHOSE(int *chose){
-    printf("\n\t@ Sorting @\n(1) Quick sort (rand 1 pivot)\n(2) Quick sort (check 5 item to get pivot)\n(3) Merge sort\n(4) Bubble sort\n(5) Compare each method\nEnter chose: ");
+    printf("\n\t@ Sorting @\n(1) Quick sort (rand 1 pivot)\n(2) Quick sort (check 5 item to get pivot)\n(3) Merge sort\n(4) Bubble sort\n(5) Compare each method\n(6) Change condition\nEnter chose: ");
     scanf("%d", chose);
 }
 
@@ -155,6 +155,15 @@ void COMPARE_RUN(int max, int min, int arraySize){
     printf("\n\t# Result (average comparison times):\n\t\t* Quick sort (rand 1 pivot): %lf\n\t\t* Quick sort (check 5 item to get pivot): %lf\n\t\t* Merge sort: %lf\n\t\t* Bubble sort: %lf\n", QS_1_R, QS_2_R, MS_R, BS_R);
 }
 
+void CHANGE_CONDITION(int *max, int *min, int *arraySize){
+    do{
+        printf("enter new \"min\" \"max\" \"arraySize\" : ");
+        scanf("%d %d %d", min, max, arraySize);
+        if(max[0] <= min[0])
+            printf("\t[ \"max\" should larger than \"min\" ! ]\n");
+    }while(max[0] <= min[0]);
+}
+
 int main(void){  
     srand(time(NULL));  
     int max = 32768, min = -32767, arraySize = 1000, cTimes = 0, chose = 1;
@@ -168,14 +177,17 @@ int main(void){
             case 3: MERGE_SORT(arrayA, 0, arraySize-1, &cTimes); break;
             case 4: BUBBLE_SORT(arrayA, 0, arraySize-1, &cTimes); break;
             case 5: COMPARE_RUN(max, min, arraySize); break;
+            case 6: CHANGE_CONDITION(&max, &min, &arraySize); break;
             default: printf("\t[ warning : wrong input ]\n"); break;
         }
-        if(chose>0 && chose<5){
-            RESULT_PRINT(arrayA, arraySize, cTimes, max, min, chose);
+        if((chose>0 && chose<5) || chose == 6){
+            if(chose != 6){
+                RESULT_PRINT(arrayA, arraySize, cTimes, max, min, chose);
+                cTimes = 0;
+            }
             tmp = arrayA;
             arrayA = ARRAY_GENERATOR(max, min, arraySize);
             free(tmp);
-            cTimes = 0;
         }
     }
 
