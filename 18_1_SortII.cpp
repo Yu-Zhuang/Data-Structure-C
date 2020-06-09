@@ -177,7 +177,7 @@ void RE_HEAP_DOWN(int *heap, int parent, int heapSize, int *cTimes){
             rightChild = parent*2+2,\
             biggerChild = 0;
         if(cTimes)
-            cTimes[0]+=2;
+            cTimes[0]++;
         // find bigger child
         if(leftChild < heapSize AND rightChild < heapSize)
             biggerChild = (heap[leftChild] > heap[rightChild]) ? leftChild : rightChild;
