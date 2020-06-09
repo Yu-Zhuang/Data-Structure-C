@@ -9,14 +9,31 @@
 
 void GET_CHOSE(int *chose){
     printf("\n\n\t@ Sorting @\n(1) Quick sort (rand 1 pivot)\n(2) Quick sort (check 3 item to get pivot)\n(3) Merge sort\n(4) Bubble sort\n(5) Shell sort\n(6) Heap sort\n(7) Compare each method\n(8) Change condition\n(0) END\nEnter chose: ");
-    scanf("%d", chose);
+    scanf("%d", chose); 
+    getchar();
+}
+
+void CHANGE_CONDITION(int *max, int *min, int *arraySize){
+    do{
+        printf("enter new \"min\" \"max\" \"arraySize\" : ");
+        scanf("%d %d %d", min, max, arraySize);
+        if(max[0] <= min[0])
+            printf("\t[ \"max\" should larger than \"min\" ! ]\n");
+    }while(max[0] <= min[0]);
+}
+
+int* ARRAY_GENERATOR(int max, int min, int numsSize){
+    int *ret = (int*)malloc(sizeof(int)*numsSize);
+    for(int i=0; i<numsSize; i++)
+        ret[i] = rand()%(max-min+1)+min;
+    return ret;
 }
 
 void ARRAY_PRINT(int *nums, int numsSize){
     printf("\n\t\t========= SORTED_ARRAY_PRINT ===========\n");
     for(int i=0;i<numsSize;i++){
         printf("%7d ", nums[i]);
-        if((i+1)%10 == 0)
+        if((i+1)%10 IS 0)
             printf("\n");
     }
 }
@@ -40,13 +57,6 @@ void SWAP(int *num_1, int *num_2){
     num_1[0] = num_2[0] + (num_2[0] = num_1[0]) - num_1[0];
 }
 
-int* ARRAY_GENERATOR(int max, int min, int numsSize){
-    int *ret = (int*)malloc(sizeof(int)*numsSize);
-    for(int i=0; i<numsSize; i++)
-        ret[i] = rand()%(max-min+1)+min;
-    return ret;
-}
-
 void BUBBLE_SORT(int *nums, int left, int right, int *cp){
     bool flag = 1;
     for(int i=left;i<right&&flag;i++){
@@ -64,12 +74,12 @@ void MERGE(int *nums, int s1, int e1, int s2, int e2, int *ct){
     int *ret = (int*)malloc(sizeof(int)*(e2-s1+1));
     int len_1 = e1 - s1 + 1, len_2 = e2 - s2 + 1;
     int i=0, j=0, n=0;
-    while(i<len_1 || j<len_2){
-        if(j == len_2){
+    while(i<len_1 OR j<len_2){
+        if(j IS len_2){
             ret[n] = nums[s1+i];
             i++;            
         }
-        else if(i == len_1){
+        else if(i IS len_1){
             ret[n] = nums[s2+j];
             j++; 
         }
@@ -103,7 +113,7 @@ void MERGE_SORT(int *nums, int start, int end, int *ct){
 
 void PIVOT_SET(int *nums, int left, int right, int chose, int *ct){
     int pivot = 0;
-    if(chose == 1)
+    if(chose IS 1)
         pivot = rand()%(right-left+1)+left;
     else{
         if(right - left > 3)
@@ -237,17 +247,8 @@ void COMPARE_RUN(int max, int min, int arraySize){
     }
     QS_1_R=(double)QS_1/round; QS_2_R=(double)QS_2/round; MS_R=(double)MS/round; BS_R=(double)BS_T/round;
     SS_R=(double)SS/round; HS_R=(double)HS/round; 
-    printf("\n\t# Condition:\n\t\t* array size: %d\n\t\t* number range: %d ~ %d\n\t\t* sorting method: compare each sorting method\n\t\t* round: %d", arraySize, min, max, round);
-    printf("\n\t# Result (average comparison times):\n\t\t* Quick sort (rand 1 pivot): %25lf\n\t\t* Quick sort (check 3 item to get pivot): %12lf\n\t\t* Merge sort: %40lf\n\t\t* Bubble sort: %39lf\n\t\t* Shell sort: %40lf\n\t\t* Heap sort: %41lf", QS_1_R, QS_2_R, MS_R, BS_R, SS_R, HS_R);
-}
-
-void CHANGE_CONDITION(int *max, int *min, int *arraySize){
-    do{
-        printf("enter new \"min\" \"max\" \"arraySize\" : ");
-        scanf("%d %d %d", min, max, arraySize);
-        if(max[0] <= min[0])
-            printf("\t[ \"max\" should larger than \"min\" ! ]\n");
-    }while(max[0] <= min[0]);
+    printf("\n\t# Condition:\n\t\t* array size: %d\n\t\t* number range: %d ~ %d\n\t\t* sorting method: compare each sorting method\n\t\t* round: %d\n", arraySize, min, max, round);
+    printf("\n\t# Result (average comparison times):\n\t\t* Quick sort (rand 1 pivot): %25lf\n\t\t* Quick sort (check 3 item to get pivot): %12lf\n\t\t* Merge sort: %40lf\n\t\t* Bubble sort: %39lf\n\t\t* Shell sort: %40lf\n\t\t* Heap sort: %41lf\n", QS_1_R, QS_2_R, MS_R, BS_R, SS_R, HS_R);
 }
 
 int main(void){  
@@ -268,8 +269,8 @@ int main(void){
             case 8: CHANGE_CONDITION(&max, &min, &arraySize); break;
             default: printf("\t[ warning : wrong input ]\n"); break;
         }
-        if(chose>0 && chose<8){
-            if(chose != 7){
+        if(chose>0 && chose<9){
+            if(chose IS_NOT 7 AND chose IS_NOT 8){
                 RESULT_PRINT(arrayA, arraySize, cTimes, max, min, chose);
                 cTimes = 0;
             }
