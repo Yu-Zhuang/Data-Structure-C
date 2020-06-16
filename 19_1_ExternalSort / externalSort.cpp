@@ -47,18 +47,18 @@ void RE_HEAP_DOWN(int *heap, int parent, int heapSize){
     while(parent < heapSize){
         int leftChild = parent*2+1,\
             rightChild = parent*2+2,\
-            biggerChild = 0;
+            smallerChild = 0;
         // find bigger child
         if(leftChild < heapSize AND rightChild < heapSize)
-            biggerChild = (heap[leftChild] > heap[rightChild]) ? leftChild : rightChild;
+            smallerChild = (heap[leftChild] < heap[rightChild]) ? leftChild : rightChild;
         else if(leftChild < heapSize)
-            biggerChild = leftChild;
+            smallerChild = leftChild;
         else
             break;
         // if child > parent => exchange(child, parent)
-        if(biggerChild < heapSize AND heap[parent] < heap[biggerChild]){
-            SWAP(&heap[parent], &heap[biggerChild]);
-            parent = biggerChild;
+        if(smallerChild < heapSize AND heap[parent] > heap[smallerChild]){
+            SWAP(&heap[parent], &heap[smallerChild]);
+            parent = smallerChild;
         }
         else
             break;
@@ -68,7 +68,7 @@ void RE_HEAP_DOWN(int *heap, int parent, int heapSize){
 void RE_HEAP_UP(int *heap, int targetSite){
     while(targetSite IS_NOT 0){
         int parent = (targetSite-1)/2;
-        if(heap[parent] < heap[targetSite])
+        if(heap[parent] > heap[targetSite])
             SWAP(&heap[parent], &heap[targetSite]);
         else
             break;
@@ -82,7 +82,7 @@ void HEAP_SORT(int *heap, int heapSize){
         RE_HEAP_DOWN(heap, 0, heapSize-i);
     }
 }
-
+/*
 int* HEAP_GENERATOR(char *file, int heapSize, int *progress){
 	FILE *DB = fopen(file, "rb");
 	int *ret = (int*)malloc(sizeof(int)*heapSize);
@@ -105,7 +105,7 @@ int* HEAP_GENERATOR(char *file, int heapSize, int *progress){
 	fclose(DB);
 	return ret;
 }
-
+*/
 char* FILE_NAME_GET(int *fileNum){
 	char *file = (char*)malloc(sizeof(char)*25);
 	char subTitle[] = ".cpp";
@@ -113,7 +113,7 @@ char* FILE_NAME_GET(int *fileNum){
 	strcat(file, subTitle);
 	return file;
 }
-
+/*
 void FILE_GENERATOR(int *fileNum){
 	char *file = FILE_NAME_GET(fileNum);
 	char subTitle[] = ".cpp";
@@ -148,7 +148,7 @@ void FILE_OUT_PUT(int *data, int outSize, int *fileNum){
 		printf("Can't open file\n");
 	fclose(fptr);
 }
-
+*/
 void MERGE_N_FILE(int N){
 	if(N>1){
 		int tn;
@@ -215,6 +215,127 @@ void MERGE_N_FILE(int N){
 	}
 }
 
+int EXTERNAL_METHOD(char *file, int fileSize, int heapSize){
+	int *heap = (int*)malloc(sizeof(int)*heapSize);
+	int progress = 500, fileNum = 0, take = 0, pre = 0, flag = 1, end = 0, oriSize = heapSize;
+	char *newFile;
+	FILE *fptr = fopen(file, "rb");
+	if(fptr IS_NOT NULL){
+		// initial heap
+		for(int i=0;i<heapSize;i++){
+			if( fread(&take, sizeof(int), 1, fptr) IS 1){
+				heap[i] = take;
+				RE_HEAP_UP(heap, i);
+			}
+			else
+				printf("can't read file\n");
+		}
+		// make initial file
+		newFile = FILE_NAME_GET(&fileNum);
+		FILE *nfptr = fopen(newFile, "w");
+		if(nfptr){ // put first element to file
+			fprintf(nfptr, "%d\n", heap[0]);
+			pre = heap[0];
+		}
+		else
+			printf("can't create new file\n");
+		// get every num in DB
+		while( end IS_NOT TRUE){
+			fread(&take, sizeof(int), 1, fptr);
+			progress ++;
+			if(progress IS fileSize){ //讀檔結束
+				heapSize = oriSize;
+				for(int i=0;i<heapSize;i++) // 調整成完整heap
+					RE_HEAP_UP(heap, i);
+				HEAP_SORT(heap, heapSize); // 排序 (大->小);
+				if(heap[0] > pre){		
+					for(int i=heapSize-1;i>=0;i--)
+						fprintf(nfptr, "%d\n", heap[i]);
+				}
+				else{
+					fclose(nfptr);
+					fileNum++;
+					newFile = FILE_NAME_GET(&fileNum);
+					nfptr = fopen(newFile, "w");
+					for(int i=heapSize-1;i>=0;i--)
+						fprintf(nfptr, "%d\n", heap[i]);
+				}
+				end = 1;
+			}
+			else{
+				heap[0] = take;
+				RE_HEAP_DOWN(heap, 0, heapSize);
+				while(flag IS_NOT 0){
+					if(heap[0] > pre){
+						fprintf(nfptr,"%d\n", heap[0]);
+						pre = heap[0];
+						flag = 0;
+					}
+					else{
+						SWAP(&heap[0], &heap[heapSize]);
+						heapSize -= 1;
+						if(heapSize IS_NOT 0)
+							RE_HEAP_DOWN(heap, 0, heapSize);
+						else{
+							fclose(nfptr);
+							fileNum ++;
+							newFile = FILE_NAME_GET(&fileNum);
+							nfptr = fopen(newFile, "w");	
+							heapSize = oriSize;
+							for(int i=0;i<heapSize;i++)
+								RE_HEAP_UP(heap, i);
+							fprintf(nfptr,"%d\n", heap[0]);
+							pre = heap[0];
+							flag = 0;										
+						}
+					}
+				}
+				flag = 1;
+			}
+		}
+		fclose(nfptr);		
+	}
+	else
+		printf("can't open %s\n", file);
+	fclose(fptr);
+	return fileNum+1;
+}
+
+void INTERNAL_METHOD(char *file, int fileSize, int heapSize){
+	int *heap = (int*)malloc(sizeof(int)*heapSize);
+	FILE *fptr = fopen(file, "rb");
+	int progress = 0, take = 0;
+	char *newFile;
+	if(fptr){
+		for(int i=0;i<fileSize;i+=heapSize){
+			for(int j=0;j<heapSize;j++){
+				if( fread(&take, sizeof(int), 1, fptr) IS 1){
+					heap[j] = take;
+					RE_HEAP_UP(heap, j);
+				}
+				else
+					printf("can't read file\n");
+			}
+			HEAP_SORT(heap, heapSize);
+			newFile = FILE_NAME_GET(&progress);
+			progress ++;
+			FILE *nfptr = fopen(newFile, "w");
+			if(nfptr){
+				for(int m=heapSize-1;m>=0;m--)
+					fprintf(nfptr, "%d\n", heap[m]);
+			}else{
+				printf("can't create new file\n");
+				break;
+			}
+			fclose(nfptr);
+		}		
+	}
+	else{
+		printf("can't open %s\n", file);
+	}
+	fclose(fptr);
+}
+
 int main(void){
 	char DB[] = "DB.cpp", subDB[]="subDB.cpp";
 	double START = 0, END = 0;
@@ -226,19 +347,12 @@ int main(void){
 	//DB_GENERATOR(DB, max, min, numsSize);
 	//DB_SUB_GENERATOR(DB, subDB);
 
-/*
-	for(int i=0;i<numsSize/heapSize;i++){
-		heap = HEAP_GENERATOR(DB, heapSize, &progress);		
-		// heap sort
-		HEAP_SORT(heap, heapSize);
-		// put nums to merge file
-		FILE_OUT_PUT(heap, heapSize, &fileNum);
-		tmp = heap;
-		free(tmp);
-	}
-*/
-	MERGE_N_FILE(numsSize/heapSize);
+	START = clock();
+	fileNum = EXTERNAL_METHOD(DB, numsSize, heapSize);
 	// merge all file
+	MERGE_N_FILE(fileNum);
+	END = clock();
+	printf("spend: %lf s\n", (END-START)/CLOCKS_PER_SEC );
 	return 0;
 }
 /*
