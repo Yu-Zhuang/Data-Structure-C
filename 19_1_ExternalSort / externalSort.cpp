@@ -43,6 +43,13 @@ void SWAP(int *n1, int *n2){
 	n1[0] = n2[0] + (n2[0] = n1[0]) - n1[0];
 }
 
+void FILE_READ(char *file){
+	FILE *fptr = fopen(file,"r");
+	int take = 0;
+	while( fscanf(fptr, "%d", &take) IS_NOT EOF)
+		printf("%d\n", take);
+}
+
 void RE_HEAP_DOWN(int *heap, int parent, int heapSize){
     while(parent < heapSize){
         int leftChild = parent*2+1,\
@@ -82,30 +89,7 @@ void HEAP_SORT(int *heap, int heapSize){
         RE_HEAP_DOWN(heap, 0, heapSize-i);
     }
 }
-/*
-int* HEAP_GENERATOR(char *file, int heapSize, int *progress){
-	FILE *DB = fopen(file, "rb");
-	int *ret = (int*)malloc(sizeof(int)*heapSize);
-	if(DB IS_NOT NULL){
-		fseek(DB, (progress[0]-1)*sizeof(int), SEEK_SET );
-		int tmp = 0, flag = 0;
-		for(int i=0;i<heapSize;i++){		
-			flag = fread(&tmp, sizeof(int), 1, DB);
-			if(flag IS 1){
-				ret[i] = tmp;
-				RE_HEAP_UP(ret, i);
-				progress[0] ++;
-			}
-			else
-				break;
-		}
-	}
-	else
-		printf("Can't open %s\n", file);
-	fclose(DB);
-	return ret;
-}
-*/
+
 char* FILE_NAME_GET(int *fileNum){
 	char *file = (char*)malloc(sizeof(char)*25);
 	char subTitle[] = ".cpp";
@@ -113,42 +97,7 @@ char* FILE_NAME_GET(int *fileNum){
 	strcat(file, subTitle);
 	return file;
 }
-/*
-void FILE_GENERATOR(int *fileNum){
-	char *file = FILE_NAME_GET(fileNum);
-	char subTitle[] = ".cpp";
-	FILE *fptr = fopen(file, "a");
-	fclose(fptr);
-	fileNum[0]++;
-}
 
-void FILE_DELETE(int *fileNum){
-	char *file = FILE_NAME_GET(fileNum);
-	int ret = remove(file);
-	puts(file);
-	if(ret IS 0)
-		fileNum[0] --;
-	else
-		printf("delete failed\n");
-}
-
-void FILE_OUT_PUT(int *data, int outSize, int *fileNum){
-	char *file = FILE_NAME_GET(fileNum);
-	FILE *fptr = fopen(file, "w");
-	if(fptr IS_NOT NULL){
-		for(int i=0;i<outSize;i++){
-			if(i IS_NOT outSize-1)
-				fprintf(fptr, "%d\n", data[i]);
-			else
-				fprintf(fptr, "%d", data[i]);
-		}
-		fileNum[0]++;
-	}
-	else 
-		printf("Can't open file\n");
-	fclose(fptr);
-}
-*/
 void MERGE_N_FILE(int N){
 	if(N>1){
 		int tn;
@@ -216,8 +165,12 @@ void MERGE_N_FILE(int N){
 }
 
 int EXTERNAL_METHOD(char *file, int fileSize, int heapSize){
+	if(fileSize <= heapSize){
+		printf("size of file is too small\n");
+		return 0;
+	}
 	int *heap = (int*)malloc(sizeof(int)*heapSize);
-	int progress = 500, fileNum = 0, take = 0, pre = 0, flag = 1, end = 0, oriSize = heapSize;
+	int progress = 100, fileNum = 0, take = 0, pre = 0, flag = 1, end = 0, oriSize = heapSize;
 	char *newFile;
 	FILE *fptr = fopen(file, "rb");
 	if(fptr IS_NOT NULL){
@@ -244,11 +197,12 @@ int EXTERNAL_METHOD(char *file, int fileSize, int heapSize){
 			fread(&take, sizeof(int), 1, fptr);
 			progress ++;
 			if(progress IS fileSize){ //讀檔結束
+				heap[0] = take;
 				heapSize = oriSize;
 				for(int i=0;i<heapSize;i++) // 調整成完整heap
 					RE_HEAP_UP(heap, i);
 				HEAP_SORT(heap, heapSize); // 排序 (大->小);
-				if(heap[0] > pre){		
+				if(heap[heapSize-1] >= pre){		
 					for(int i=heapSize-1;i>=0;i--)
 						fprintf(nfptr, "%d\n", heap[i]);
 				}
@@ -266,13 +220,13 @@ int EXTERNAL_METHOD(char *file, int fileSize, int heapSize){
 				heap[0] = take;
 				RE_HEAP_DOWN(heap, 0, heapSize);
 				while(flag IS_NOT 0){
-					if(heap[0] > pre){
+					if(heap[0] >= pre){
 						fprintf(nfptr,"%d\n", heap[0]);
 						pre = heap[0];
 						flag = 0;
 					}
 					else{
-						SWAP(&heap[0], &heap[heapSize]);
+						SWAP(&heap[0], &heap[heapSize-1]);
 						heapSize -= 1;
 						if(heapSize IS_NOT 0)
 							RE_HEAP_DOWN(heap, 0, heapSize);
@@ -302,6 +256,10 @@ int EXTERNAL_METHOD(char *file, int fileSize, int heapSize){
 }
 
 void INTERNAL_METHOD(char *file, int fileSize, int heapSize){
+	if(fileSize <= heapSize){
+		printf("size of file is too small\n");
+		return ;
+	}
 	int *heap = (int*)malloc(sizeof(int)*heapSize);
 	FILE *fptr = fopen(file, "rb");
 	int progress = 0, take = 0;
@@ -338,24 +296,28 @@ void INTERNAL_METHOD(char *file, int fileSize, int heapSize){
 
 int main(void){
 	char DB[] = "DB.cpp", subDB[]="subDB.cpp";
-	double START = 0, END = 0;
+	double START = 0, MED = 0, END = 0;
 	int max = 32767, min = -32768, numsSize = 5000;
-	int heapSize = 100, *heap, *tmp;
-	int progress = 0;
-	int fileNum = 0;
+	int heapSize = 100;
+	int fileNum = numsSize/heapSize;
 
-	//DB_GENERATOR(DB, max, min, numsSize);
+	DB_GENERATOR(DB, max, min, numsSize);
 	//DB_SUB_GENERATOR(DB, subDB);
 
 	START = clock();
-	fileNum = EXTERNAL_METHOD(DB, numsSize, heapSize);
+	INTERNAL_METHOD(DB, numsSize, heapSize);
+	MED = clock();
 	// merge all file
 	MERGE_N_FILE(fileNum);
 	END = clock();
-	printf("spend: %lf s\n", (END-START)/CLOCKS_PER_SEC );
+	printf("\n\t@ internal @\n\t\t# heap spend:  %lf s\n\t\t# merge spend: %lf s\n\t\t# total spend: %lf s\n\t\t# file num: %d\n", (MED-START)/CLOCKS_PER_SEC,(END-MED)/CLOCKS_PER_SEC,(END-START)/CLOCKS_PER_SEC, fileNum );
+
+	START = clock();
+	fileNum = EXTERNAL_METHOD(DB, numsSize, heapSize);
+	MED = clock();
+	// merge all file
+	MERGE_N_FILE(fileNum);
+	END = clock();
+	printf("\n\t@ external @\n\t\t# heap spend:  %lf s\n\t\t# merge spend: %lf s\n\t\t# total spend: %lf s\n\t\t# file num: %d\n", (MED-START)/CLOCKS_PER_SEC,(END-MED)/CLOCKS_PER_SEC,(END-START)/CLOCKS_PER_SEC, fileNum );
 	return 0;
 }
-/*
-int rename(const char *old_filename, const char *new_filename)
-成功則返回0。錯誤則返回-1
-*/
