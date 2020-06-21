@@ -9,14 +9,14 @@
 bool FLAG = 0;
 
 void FILE_GENERATE(int min, int max, int size){
-	FILE *nfptr = fopen("db.cpp", "w");
-	if(nfptr){
-		for(int i=0;i<size;i++)
-			fprintf(nfptr,"%d\n", rand()%(max-min+1)+min);
-	}	
-	else
-		printf("Can't open the file\n");
-	fclose(nfptr);
+    FILE *nfptr = fopen("db.cpp", "w");
+    if(nfptr){
+        for(int i=0;i<size;i++)
+            fprintf(nfptr,"%d\n", rand()%(max-min+1)+min);
+    }   
+    else
+        printf("Can't open the file\n");
+    fclose(nfptr);
 }
 
 void GET_CHOSE(int *chose){
@@ -35,17 +35,17 @@ void CHANGE_CONDITION(int *max, int *min, int *arraySize){
 }
 
 int* ARRAY_GENERATOR(int numsSize){
-	FILE *fptr = fopen("db.cpp", "r");
-	if(fptr){
-	    int *ret = (int*)malloc(sizeof(int)*numsSize);
-	    for(int i=0; i<numsSize; i++)
-	        fscanf(fptr, "%d", &ret[i]);
-	    fclose(fptr);
-	    return ret;
-	}
-	else
-		printf("can't open the file\n");
-	fclose(fptr);
+    FILE *fptr = fopen("db.cpp", "r");
+    if(fptr){
+        int *ret = (int*)malloc(sizeof(int)*numsSize);
+        for(int i=0; i<numsSize; i++)
+            fscanf(fptr, "%d", &ret[i]);
+        fclose(fptr);
+        return ret;
+    }
+    else
+        printf("can't open the file\n");
+    fclose(fptr);
     return NULL;
 }
 
@@ -82,8 +82,6 @@ void BUBBLE_SORT(int *nums, int left, int right, int *cp){
     for(int i=left;i<right&&flag;i++){
         flag = 0;
         for(int j=0;j<right+1-i;j++){
-            if(cp != NULL)
-                cp[0] ++;
             if(nums[j] > nums[j+1])
                 { SWAP(&nums[j], &nums[j+1]); flag = 1; }
         }
@@ -96,28 +94,24 @@ void MERGE(int *nums, int s1, int e1, int s2, int e2, int *ct){
     int *ret = (int*)malloc(sizeof(int)*(e2-s1+1));
     int len_1 = e1 - s1 + 1, len_2 = e2 - s2 + 1;
     int i=0, j=0, n=0;
-    while(i<len_1 OR j<len_2){
-        if(j IS len_2){
-            ret[n] = nums[s1+i];
-            i++;            
-        }
-        else if(i IS len_1){
-            ret[n] = nums[s2+j];
-            j++; 
-        }
-        else if(nums[s1+i] < nums[s2+j]){
+    while(i<len_1 AND j<len_2){
+        if(nums[s1+i] < nums[s2+j]){
             ret[n] = nums[s1+i];
             i++;
-            if(ct)
-                ct[0]++;
         }
-        else if(nums[s1+i] >= nums[s2+j]){
+        else{
             ret[n] = nums[s2+j];
-            j++;
-            if(ct)   
-                ct[0]++;         
+            j++;      
         }
         n++;             
+    }
+    if(j < len_2){
+        for(int m=j;m<len_2;m++,n++)
+            ret[n] = nums[s1+i];          
+    }
+    else if(i < len_1){
+        for(int m=i;m<len_1;m++,n++)
+            ret[n] = nums[s2+j];
     }
     for(int m=0;m<e2-s1+1; m++)
         nums[s1+m] = ret[m];
@@ -152,8 +146,8 @@ void QUICK_SORT(int *nums, int left, int right, int *ct, int chose){
         PIVOT_SET(nums, left, right, chose, ct);  // set pivot to left
         int base=left, i=left, j=right+1;
         do{
-            do {i++; ct[0]++;} while(nums[i]<nums[base] && i<=right); 
-            do {j--; ct[0]++;} while(nums[j]>nums[base] && j>left); 
+            do {i++;} while(nums[i]<nums[base] && i<=right); 
+            do {j--;} while(nums[j]>nums[base] && j>left); 
             if(i<j) SWAP(&nums[i], &nums[j]);
         }while(i<j);
         SWAP(&nums[base], &nums[j]);
@@ -165,17 +159,17 @@ void QUICK_SORT(int *nums, int left, int right, int *ct, int chose){
 }
 
 void SHELL_SORT(int *nums, int numsSize, int *cTimes){
-	int space = numsSize/2;
+    int space = numsSize/2;
     while(space){
-    	for(int i=space; i<numsSize; i++){
-    		for(int j=i; j>=space; j-=space, cTimes[0]++){
-    			if(nums[j] < nums[j-space])
-    				SWAP(&nums[j], &nums[j-space]);
-    			else
-    				break;
-    		}
-    	}
-    	space /= 2;
+        for(int i=space; i<numsSize; i++){
+            for(int j=i; j>=space; j-=space){
+                if(nums[j] < nums[j-space])
+                    SWAP(&nums[j], &nums[j-space]);
+                else
+                    break;
+            }
+        }
+        space /= 2;
         if(FLAG)
             ARRAY_PRINT(nums,numsSize);
     }
@@ -183,8 +177,6 @@ void SHELL_SORT(int *nums, int numsSize, int *cTimes){
 
 void RE_HEAP_UP(int *heap, int targetSite, int *cTimes){
     while(targetSite IS_NOT 0){
-        if(cTimes)
-            cTimes[0]++;
         int parent = (targetSite-1)/2;
         if(heap[parent] < heap[targetSite])
             SWAP(&heap[parent], &heap[targetSite]);
@@ -198,8 +190,6 @@ void RE_HEAP_DOWN(int *heap, int parent, int heapSize, int *cTimes){
         int leftChild = parent*2+1,\
             rightChild = parent*2+2,\
             biggerChild = 0;
-        if(cTimes)
-            cTimes[0]++;
         // find bigger child
         if(leftChild < heapSize AND rightChild < heapSize)
             biggerChild = (heap[leftChild] > heap[rightChild]) ? leftChild : rightChild;
@@ -295,7 +285,6 @@ int main(void){
 
     while(chose != 0){
         GET_CHOSE(&chose);
-        FILE_GENERATE(min, max, arraySize); 
         arrayA = ARRAY_GENERATOR(arraySize);
         START = clock();
         switch(chose){
@@ -316,6 +305,8 @@ int main(void){
                 printf("\n\t# Time:\n\t\t* Spend: %lf sec\n", (END-START)/CLOCKS_PER_SEC );
                 cTimes = 0;
             }
+            if(chose IS 8)
+                FILE_GENERATE(min, max, arraySize); 
             tmp = arrayA;
             free(tmp);
         }
