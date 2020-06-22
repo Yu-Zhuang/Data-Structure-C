@@ -329,7 +329,7 @@ void COMPARE_RUN(int max, int min, int arraySize){
 
 int main(void){  
     srand(time(NULL)); 
-    int max = 32767, min = -32768, arraySize = 10, chose = 1;
+    int max = 32767, min = -32768, arraySize = 1000, chose = 1;
     char cT[MAX] = {'\0'}, zero[]="0";
     int *arrayA, *tmp;
     double START = 0, END = 0;
