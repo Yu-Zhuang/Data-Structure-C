@@ -8,8 +8,14 @@
 # define AND &&
 # define OR ||
 # define MAX 1000
-int FLAG = 1;
+int FLAG = 0;
 
+bool IS_SORT(int *nums, int numsSize){
+    for(int i=0;i<numsSize-1;i++)
+        if(nums[i] > nums[i+1])
+            return false;
+    return true;
+}
 void SUM(char* num_1, char* num_2){
     int len_1 = strlen(num_1), len_2 = strlen(num_2);
     int i=len_1, j=len_2;
@@ -353,6 +359,11 @@ int main(void){
                 RESULT_PRINT(arrayA, arraySize, cT, max, min, chose);
                 printf("\n\t# Time:\n\t\t* Spend: %lf sec\n", (END-START)/CLOCKS_PER_SEC );
                 strcpy(cT,zero);
+                int ret = IS_SORT(arrayA, arraySize);
+                if(ret)
+                    printf("sorted? yes\n");
+                else
+                    printf("sorted? not\n");
             }
             if(chose IS 8)
                 FILE_GENERATE(min, max, arraySize); 
