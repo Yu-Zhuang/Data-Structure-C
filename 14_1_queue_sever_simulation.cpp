@@ -140,7 +140,7 @@ void PROCESSOR(Q_HEAD *q, int *processorRate, int *totalQueue,int *totalArrived,
 			totalArrived[0] += 1;
 			// 1stTimes++, 2ndTimes calculate;
 			switch(qTmp->val->susTimes){
-				case 1: firstTimes[0]++; break;
+				case 1: firstTimes[0]++; break; 
 				case 2: secondTimes[0]++; break;
 				default: break;
 			}
