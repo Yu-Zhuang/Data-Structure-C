@@ -2,7 +2,7 @@
 # include <stdlib.h>
 # include <time.h>
 
-#define MAX 1000
+# define MAX 1000
 
 void swap(int *a, int *b){
 	int tmp = a[0];
